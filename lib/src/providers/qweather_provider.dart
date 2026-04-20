@@ -307,10 +307,6 @@ class QWeatherProvider implements WeatherProvider {
         return WeatherCondition.unknown;
     }
   }
-
-  String _formatDateForQWeather(DateTime date) {
-    return '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}${date.hour.toString().padLeft(2, '0')}';
-  }
 }
 
 // Internal models for QWeather API response
