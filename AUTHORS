@@ -1,0 +1,26 @@
+# Authors
+
+This file lists the contributors to the WeatherKit project.
+
+## Core Team
+
+- **H1S97X** - Original author and maintainer
+  - Initial design and implementation
+  - Weather service and API integration
+  - Cache mechanism and error handling
+
+## Contributors
+
+We welcome contributions from the community! If you've contributed to this project,
+please add your name here in a pull request.
+
+## Special Thanks
+
+- The Dart team for creating an amazing language
+- The Flutter team for the excellent framework
+- The open-source community for inspiration and support
+- Everyone who uses and provides feedback on WeatherKit
+
+---
+
+Want to contribute? Check out our [Contributing Guidelines](CONTRIBUTING.md)!
