@@ -10,25 +10,15 @@ class WeatherCache {
   /// Default cache duration: 30 minutes
   static const Duration defaultMaxAge = Duration(minutes: 30);
 
-  /// Save weather data to cache
-  Future<void> saveWeather(String location, WeatherModel weather) async {
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = '$_cacheKeyPrefix${location.hashCode}';
-    final timeKey = '$_cacheTimeKeyPrefix${location.hashCode}';
-
-    await prefs.setString(cacheKey, jsonEncode(weather.toJson()));
-    await prefs.setString(timeKey, DateTime.now().toIso8601String());
-  }
-
   /// Get cached weather data
-  Future<WeatherModel?> getWeather(String location) async {
+  Future<WeatherData?> get(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    final cacheKey = '$_cacheKeyPrefix${location.hashCode}';
+    final cacheKey = '$_cacheKeyPrefix${key.hashCode}';
     final cacheData = prefs.getString(cacheKey);
 
     if (cacheData != null) {
       try {
-        return WeatherModel.fromJson(jsonDecode(cacheData));
+        return WeatherData.fromJson(jsonDecode(cacheData));
       } catch (e) {
         // Return null if JSON parsing fails
         return null;
@@ -37,13 +27,30 @@ class WeatherCache {
     return null;
   }
 
+  /// Save weather data to cache
+  Future<void> set(String key, WeatherData weather, {Duration? ttl}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = '$_cacheKeyPrefix${key.hashCode}';
+    final timeKey = '$_cacheTimeKeyPrefix${key.hashCode}';
+
+    await prefs.setString(cacheKey, jsonEncode(weather.toJson()));
+    await prefs.setString(timeKey, DateTime.now().toIso8601String());
+  }
+
+  /// Remove cached weather data
+  Future<void> remove(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_cacheKeyPrefix${key.hashCode}');
+    await prefs.remove('$_cacheTimeKeyPrefix${key.hashCode}');
+  }
+
   /// Check if cache is valid
   Future<bool> isCacheValid(
-    String location, {
+    String key, {
     Duration maxAge = defaultMaxAge,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final timeKey = '$_cacheTimeKeyPrefix${location.hashCode}';
+    final timeKey = '$_cacheTimeKeyPrefix${key.hashCode}';
     final timeStr = prefs.getString(timeKey);
 
     if (timeStr == null) return false;
@@ -57,9 +64,9 @@ class WeatherCache {
   }
 
   /// Get cache time
-  Future<DateTime?> getCacheTime(String location) async {
+  Future<DateTime?> getCacheTime(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    final timeKey = '$_cacheTimeKeyPrefix${location.hashCode}';
+    final timeKey = '$_cacheTimeKeyPrefix${key.hashCode}';
     final timeStr = prefs.getString(timeKey);
 
     if (timeStr == null) return null;
@@ -71,15 +78,8 @@ class WeatherCache {
     }
   }
 
-  /// Clear cache for a specific location
-  Future<void> clearCache(String location) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('$_cacheKeyPrefix${location.hashCode}');
-    await prefs.remove('$_cacheTimeKeyPrefix${location.hashCode}');
-  }
-
   /// Clear all weather cache
-  Future<void> clearAllCache() async {
+  Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys().where((key) =>
       key.startsWith(_cacheKeyPrefix) || key.startsWith(_cacheTimeKeyPrefix)
@@ -108,4 +108,14 @@ class WeatherCache {
 
     return size;
   }
+
+  // Legacy methods for backward compatibility
+  @Deprecated('Use get() instead')
+  Future<WeatherData?> getWeather(String location) => get(location);
+
+  @Deprecated('Use set() instead')
+  Future<void> saveWeather(String location, WeatherData weather) => set(location, weather);
+
+  @Deprecated('Use remove() instead')
+  Future<void> clearCache(String location) => remove(location);
 }
