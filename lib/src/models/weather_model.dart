@@ -1,5 +1,17 @@
 /// Location information
 class LocationInfo {
+  /// Create LocationInfo from JSON
+  factory LocationInfo.fromJson(Map<String, dynamic> json) {
+    final location = json['location'] ?? json;
+    return LocationInfo(
+      name: location['name'] ?? '',
+      region: location['region'] ?? '',
+      country: location['country'] ?? '',
+      lat: (location['lat'] ?? 0).toDouble(),
+      lon: (location['lon'] ?? 0).toDouble(),
+    );
+  }
+
   /// City name
   final String name;
 
@@ -22,17 +34,6 @@ class LocationInfo {
     required this.lat,
     required this.lon,
   });
-
-  factory LocationInfo.fromJson(Map<String, dynamic> json) {
-    final location = json['location'] ?? json;
-    return LocationInfo(
-      name: location['name'] ?? '',
-      region: location['region'] ?? '',
-      country: location['country'] ?? '',
-      lat: (location['lat'] ?? 0).toDouble(),
-      lon: (location['lon'] ?? 0).toDouble(),
-    );
-  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -64,6 +65,20 @@ class LocationInfo {
 
 /// Current weather conditions
 class CurrentWeather {
+  /// Create CurrentWeather from JSON
+  factory CurrentWeather.fromJson(Map<String, dynamic> json) {
+    final current = json['current'] ?? json;
+    final condition = current['condition'] ?? {};
+
+    return CurrentWeather(
+      tempC: (current['temp_c'] ?? 0).toDouble(),
+      conditionText: condition['text'] ?? '',
+      humidity: current['humidity'] ?? 0,
+      windKph: (current['wind_kph'] ?? 0).toDouble(),
+      uvIndex: current['uv'] ?? 0,
+    );
+  }
+
   /// Temperature in Celsius
   final double tempC;
 
@@ -87,72 +102,81 @@ class CurrentWeather {
     required this.uvIndex,
   });
 
-  factory CurrentWeather.fromJson(Map<String, dynamic> json) {
-    final current = json['current'] ?? json;
-    final condition = current['condition'] ?? {};
-
-    return CurrentWeather(
-      tempC: (current['temp_c'] ?? 0).toDouble(),
-      conditionText: condition['text'] ?? '',
-      humidity: current['humidity'] ?? 0,
-      windKph: (current['wind_kph'] ?? 0).toDouble(),
-      uvIndex: current['uv'] ?? 0,
-    );
-  }
-
   Map<String, dynamic> toJson() {
     return {
       'temp_c': tempC,
-      'condition': {'text': conditionText},
+      'condition_text': conditionText,
       'humidity': humidity,
       'wind_kph': windKph,
       'uv': uvIndex,
     };
   }
+
+  @override
+  String toString() =>
+      'CurrentWeather: $tempC°C, $conditionText, Humidity: $humidity%';
 }
 
-/// Hourly forecast
+/// Hourly weather forecast
 class HourlyForecast {
-  /// Time
+  /// Create HourlyForecast from JSON
+  factory HourlyForecast.fromJson(Map<String, dynamic> json) {
+    return HourlyForecast(
+      time: DateTime.parse(json['time']),
+      tempC: (json['temp_c'] ?? 0).toDouble(),
+      conditionText: json['condition_text'] ?? json['condition']?['text'] ?? '',
+      isDay: json['is_day'] == 1,
+    );
+  }
+
+  /// Forecast time
   final DateTime time;
 
   /// Temperature in Celsius
   final double tempC;
 
-  /// Weather condition text
+  /// Weather condition
   final String conditionText;
 
-  /// Chance of rain percentage
-  final int chanceOfRain;
+  /// Is daytime (1) or nighttime (0)
+  final bool isDay;
 
   HourlyForecast({
     required this.time,
     required this.tempC,
     required this.conditionText,
-    required this.chanceOfRain,
+    required this.isDay,
   });
-
-  factory HourlyForecast.fromJson(Map<String, dynamic> json) {
-    return HourlyForecast(
-      time: DateTime.parse(json['time']),
-      tempC: (json['temp_c'] ?? 0).toDouble(),
-      conditionText: json['condition']['text'] ?? '',
-      chanceOfRain: json['chance_of_rain'] ?? 0,
-    );
-  }
 
   Map<String, dynamic> toJson() {
     return {
       'time': time.toIso8601String(),
       'temp_c': tempC,
-      'condition': {'text': conditionText},
-      'chance_of_rain': chanceOfRain,
+      'condition_text': conditionText,
+      'is_day': isDay ? 1 : 0,
     };
   }
+
+  @override
+  String toString() =>
+      '${time.hour}:00 - $tempC°C, $conditionText';
 }
 
-/// Daily forecast
+/// Daily weather forecast
 class DailyForecast {
+  /// Create DailyForecast from JSON
+  factory DailyForecast.fromJson(Map<String, dynamic> json) {
+    return DailyForecast(
+      date: DateTime.parse(json['date']),
+      maxTempC: (json['maxtemp_c'] ?? 0).toDouble(),
+      minTempC: (json['mintemp_c'] ?? 0).toDouble(),
+      conditionText: json['condition_text'] ?? json['day']?['condition']?['text'] ?? '',
+      sunrise: json['sunrise'] ?? '',
+      sunset: json['sunset'] ?? '',
+      uvIndex: json['uv'] ?? 0,
+    );
+  }
+
   /// Date
   final DateTime date;
 
@@ -162,54 +186,74 @@ class DailyForecast {
   /// Minimum temperature in Celsius
   final double minTempC;
 
-  /// Weather condition text
+  /// Weather condition
   final String conditionText;
 
-  /// Chance of rain percentage
-  final int chanceOfRain;
+  /// Sunrise time
+  final String sunrise;
+
+  /// Sunset time
+  final String sunset;
+
+  /// UV index
+  final int uvIndex;
 
   DailyForecast({
     required this.date,
     required this.maxTempC,
     required this.minTempC,
     required this.conditionText,
-    required this.chanceOfRain,
+    required this.sunrise,
+    required this.sunset,
+    required this.uvIndex,
   });
-
-  factory DailyForecast.fromJson(Map<String, dynamic> json) {
-    final day = json['day'] ?? {};
-
-    return DailyForecast(
-      date: DateTime.parse(json['date']),
-      maxTempC: (day['maxtemp_c'] ?? 0).toDouble(),
-      minTempC: (day['mintemp_c'] ?? 0).toDouble(),
-      conditionText: day['condition']['text'] ?? '',
-      chanceOfRain: day['daily_chance_of_rain'] ?? 0,
-    );
-  }
 
   Map<String, dynamic> toJson() {
     return {
-      'date': date.toIso8601String().substring(0, 10),
-      'day': {
-        'maxtemp_c': maxTempC,
-        'mintemp_c': minTempC,
-        'condition': {'text': conditionText},
-        'daily_chance_of_rain': chanceOfRain,
-      },
+      'date': date.toIso8601String(),
+      'maxtemp_c': maxTempC,
+      'mintemp_c': minTempC,
+      'condition_text': conditionText,
+      'sunrise': sunrise,
+      'sunset': sunset,
+      'uv': uvIndex,
     };
   }
+
+  @override
+  String toString() =>
+      '${date.day}/${date.month}: ${minTempC.toInt()}°C~${maxTempC.toInt()}°C, $conditionText';
 }
 
-/// Complete weather model
+/// Complete weather data
 class WeatherData {
+  /// Create WeatherData from WeatherAPI response
+  factory WeatherData.fromJson(Map<String, dynamic> json) {
+    return WeatherData(
+      location: LocationInfo.fromJson(json),
+      current: CurrentWeather.fromJson(json),
+      hourly: (json['forecast']?['forecastday'] as List?)
+              ?.expand((day) {
+                final hourData = day['hour'] as List?;
+                if (hourData == null) return [];
+                return hourData.map((h) => HourlyForecast.fromJson(h));
+              })
+              .toList() ??
+          [],
+      daily: (json['forecast']?['forecastday'] as List?)
+              ?.map((day) => DailyForecast.fromJson(day))
+              .toList() ??
+          [],
+    );
+  }
+
   /// Location information
   final LocationInfo location;
 
   /// Current weather
   final CurrentWeather current;
 
-  /// Hourly forecast
+  /// Hourly forecast (24 hours)
   final List<HourlyForecast> hourly;
 
   /// Daily forecast
@@ -218,61 +262,37 @@ class WeatherData {
   WeatherData({
     required this.location,
     required this.current,
-    List<HourlyForecast>? hourly,
-    List<DailyForecast>? daily,
-  })  : hourly = hourly ?? const [],
-        daily = daily ?? const [];
-
-  factory WeatherData.fromJson(Map<String, dynamic> json) {
-    final forecast = json['forecast'] ?? {};
-
-    List<HourlyForecast>? hourlyList;
-    if (forecast['forecastday'] != null) {
-      final forecastDays = forecast['forecastday'] as List;
-      if (forecastDays.isNotEmpty) {
-        final hours = forecastDays[0]['hour'] as List;
-        hourlyList = hours.map((e) => HourlyForecast.fromJson(e)).toList();
-      }
-    }
-
-    List<DailyForecast>? dailyList;
-    if (forecast['forecastday'] != null) {
-      dailyList = (forecast['forecastday'] as List)
-          .map((e) => DailyForecast.fromJson(e))
-          .toList();
-    }
-
-    return WeatherData(
-      location: LocationInfo.fromJson(json),
-      current: CurrentWeather.fromJson(json),
-      hourly: hourlyList ?? const [],
-      daily: dailyList ?? const [],
-    );
-  }
+    required this.hourly,
+    required this.daily,
+  });
 
   Map<String, dynamic> toJson() {
     return {
       'location': location.toJson(),
       'current': current.toJson(),
-      'forecast': {
-        'forecastday': [
-          {
-            'hour': hourly.map((e) => e.toJson()).toList(),
-          },
-          ...daily.map((e) => e.toJson()).toList(),
-        ],
-      },
+      'hourly': hourly.map((h) => h.toJson()).toList(),
+      'daily': daily.map((d) => d.toJson()).toList(),
     };
   }
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is WeatherData &&
-        other.location == location &&
-        other.current == current;
+  /// Get current temperature with unit
+  String get temperatureDisplay => '${current.tempC.toInt()}°C';
+
+  /// Get weather icon code (simplified)
+  String get weatherIcon => _getWeatherIconCode(current.conditionText);
+
+  String _getWeatherIconCode(String condition) {
+    final lower = condition.toLowerCase();
+    if (lower.contains('sunny') || lower.contains('clear')) return '01d';
+    if (lower.contains('cloud')) return '02d';
+    if (lower.contains('rain') || lower.contains('drizzle')) return '10d';
+    if (lower.contains('snow')) return '13d';
+    if (lower.contains('thunder')) return '11d';
+    if (lower.contains('mist') || lower.contains('fog')) return '50d';
+    return '01d';
   }
 
   @override
-  int get hashCode => Object.hash(location, current);
+  String toString() =>
+      'WeatherData(${location.name}: ${current.tempC}°C, ${current.conditionText})';
 }

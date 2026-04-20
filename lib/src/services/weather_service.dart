@@ -5,25 +5,36 @@ import '../errors/weather_errors.dart';
 
 /// Weather service for fetching weather data
 class WeatherService {
-  final Dio _dio;
-  final String apiKey;
-  final WeatherCache? cache;
-  final String baseUrl;
-
   /// Create weather service
   ///
   /// [apiKey] - WeatherAPI.com API key
   /// [cache] - Optional cache service for offline support
   /// [baseUrl] - Base URL for weather API (default: https://api.weatherapi.com/v1)
-  WeatherService({
+  factory WeatherService({
+    required String apiKey,
+    WeatherCache? cache,
+    String? baseUrl,
+  }) {
+    return WeatherService._internal(
+      apiKey: apiKey,
+      cache: cache,
+      baseUrl: baseUrl ?? 'https://api.weatherapi.com/v1',
+    );
+  }
+
+  WeatherService._internal({
     required this.apiKey,
     this.cache,
-    String? baseUrl,
-  })  : baseUrl = baseUrl ?? 'https://api.weatherapi.com/v1',
-        _dio = Dio() {
+    required this.baseUrl,
+  })  : _dio = Dio() {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
   }
+
+  final Dio _dio;
+  final String apiKey;
+  final WeatherCache? cache;
+  final String baseUrl;
 
   /// Get weather by city name
   ///
@@ -39,7 +50,7 @@ class WeatherService {
     int hourlyCount = 24,
     int dailyCount = 7,
   }) async {
-    final cacheKey = '$city';
+    final cacheKey = city;
 
     // Try cache first
     if (cache != null) {
@@ -85,7 +96,7 @@ class WeatherService {
         );
       } else {
         return Result.failure(
-          WeatherError.unknown('服务器错误 (${response.statusCode})'),
+          WeatherError.unknown('服务器错误 ($response.statusCode)'),
         );
       }
     } on DioException catch (e) {
@@ -107,14 +118,14 @@ class WeatherService {
           WeatherError.unknown('未知错误: ${e.message}'),
         );
       }
-    } catch (e) {
+    } catch (_) {
       return Result.failure(
-        WeatherError.unknown('未知错误: ${e.toString()}'),
+        WeatherError.unknown('未知错误'),
       );
     }
   }
 
-  /// Get weather by latitude and longitude
+  /// Get weather by coordinates
   ///
   /// [lat] - Latitude
   /// [lon] - Longitude
@@ -147,6 +158,8 @@ class WeatherService {
           'key': apiKey,
           'q': '$lat,$lon',
           'days': dailyCount,
+          'aqi': 'no',
+          'alerts': 'no',
           'lang': 'zh',
         },
       );
@@ -166,31 +179,30 @@ class WeatherService {
         );
       }
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionError) {
-        return Result.failure(
-          WeatherError.network('网络连接失败'),
-        );
-      } else if (e.type == DioExceptionType.connectionTimeout ||
+      if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         return Result.failure(
-          WeatherError.network('连接超时'),
+          WeatherError.network('连接超时，请检查网络'),
+        );
+      } else if (e.type == DioExceptionType.connectionError) {
+        return Result.failure(
+          WeatherError.network('网络连接失败，请检查网络设置'),
         );
       } else {
         return Result.failure(
-          WeatherError.unknown('未知错误: ${e.message}'),
+          WeatherError.unknown('网络错误: ${e.message}'),
         );
       }
-    } catch (e) {
-      return Result.failure(
-        WeatherError.unknown('未知错误: ${e.toString()}'),
-      );
     }
   }
 
-  /// Search cities
+  /// Search cities by name
   ///
-  /// [query] - Search query (e.g., "Bei")
-  Future<Result<List<LocationInfo>>> searchCities(String query) async {
+  /// [query] - City name search query
+  /// Returns list of matching cities
+  Future<Result<List<LocationInfo>>> searchCities({
+    required String query,
+  }) async {
     try {
       final response = await _dio.get(
         '$baseUrl/search.json',
@@ -202,23 +214,19 @@ class WeatherService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
-        final locations = data
-            .map((e) => LocationInfo.fromJson({'location': e}))
+        final cities = data
+            .map((json) => LocationInfo.fromJson(json))
             .toList();
 
-        return Result.success(locations);
+        return Result.success(cities);
       } else {
         return Result.failure(
-          WeatherError.unknown('服务器错误 (${response.statusCode})'),
+          WeatherError.unknown('搜索失败: ${response.statusCode}'),
         );
       }
     } on DioException catch (e) {
       return Result.failure(
-        WeatherError.network('网络连接失败'),
-      );
-    } catch (e) {
-      return Result.failure(
-        WeatherError.unknown('未知错误: ${e.toString()}'),
+        WeatherError.network('网络错误: ${e.message}'),
       );
     }
   }

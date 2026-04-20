@@ -27,11 +27,6 @@ class WeatherError {
   /// Error message
   final String message;
 
-  WeatherError({
-    required this.type,
-    required this.message,
-  });
-
   /// Create network error
   factory WeatherError.network(String message) {
     return WeatherError(type: WeatherErrorType.network, message: message);
@@ -62,6 +57,11 @@ class WeatherError {
     return WeatherError(type: WeatherErrorType.unknown, message: message);
   }
 
+  WeatherError({
+    required this.type,
+    required this.message,
+  });
+
   @override
   String toString() {
     return 'WeatherError: $type - $message';
@@ -70,21 +70,6 @@ class WeatherError {
 
 /// Result type for weather service operations
 class Result<T> {
-  /// Success data
-  final T? data;
-
-  /// Error information
-  final WeatherError? error;
-
-  /// Whether the operation was successful
-  final bool isSuccess;
-
-  Result._({
-    this.data,
-    this.error,
-    required this.isSuccess,
-  });
-
   /// Create a success result
   factory Result.success(T data) {
     return Result._(
@@ -100,6 +85,21 @@ class Result<T> {
       isSuccess: false,
     );
   }
+
+  /// Success data
+  final T? data;
+
+  /// Error information
+  final WeatherError? error;
+
+  /// Whether the operation was successful
+  final bool isSuccess;
+
+  Result._({
+    this.data,
+    required this.error,
+    required this.isSuccess,
+  });
 
   /// Handle result with callbacks
   R fold<R>(

@@ -19,7 +19,6 @@
 ///   (error) => print('Error: ${error.message}'),
 /// );
 /// ```
-library weather_kit;
 
 export 'src/services/weather_service.dart';
 export 'src/models/weather_model.dart';
