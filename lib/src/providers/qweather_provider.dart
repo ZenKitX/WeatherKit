@@ -14,24 +14,22 @@ class QWeatherProvider implements WeatherProvider {
 
   QWeatherProvider._({required this.config});
 
-  @override
   final WeatherProviderConfig config;
 
   @override
   Future<Result<Weather>> getByCity({
     required String city,
-    bool includeForecast = true,
-    String language = 'en',
+    bool includeHourly = false,
+    bool includeDaily = false,
+    int hourlyCount = 24,
+    int dailyCount = 7,
   }) async {
     try {
       // Step 1: Search city to get location ID
-      final cities = await _searchCity(city, language);
+      final cities = await _searchCity(city, config.language);
       if (cities.isEmpty) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.cityNotFound,
-            message: 'City not found: $city',
-          ),
+          WeatherError.locationNotFound('City not found: $city'),
         );
       }
 
@@ -44,9 +42,12 @@ class QWeatherProvider implements WeatherProvider {
       List<HourlyForecast>? hourly;
       List<DailyForecast>? daily;
 
-      if (includeForecast) {
-        hourly = await _getHourlyForecast(locationId);
-        daily = await _getDailyForecast(locationId);
+      if (includeHourly) {
+        hourly = await _getHourlyForecast(locationId, hourlyCount);
+      }
+
+      if (includeDaily) {
+        daily = await _getDailyForecast(locationId, dailyCount);
       }
 
       // Step 4: Build domain model
@@ -54,11 +55,11 @@ class QWeatherProvider implements WeatherProvider {
         city: cities.first.toCity(),
         condition: _parseCondition(current.condition),
         currentTemperature: current.temp.toDouble(),
-        humidity: current.humidity.toDouble(),
+        humidity: current.humidity,
         windSpeed: current.windSpeed.toDouble(),
-        feelsLike: current.feelsLike?.toDouble(),
-        hourly: hourly,
-        daily: daily,
+        currentTime: DateTime.now(),
+        hourlyForecast: hourly ?? [],
+        dailyForecast: daily ?? [],
       );
 
       return Result.success(weather);
@@ -66,10 +67,7 @@ class QWeatherProvider implements WeatherProvider {
       return Result.failure(e);
     } catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.unknown,
-          message: 'Failed to get weather: $e',
-        ),
+        WeatherError.unknown('Failed to get weather: $e'),
       );
     }
   }
@@ -78,8 +76,10 @@ class QWeatherProvider implements WeatherProvider {
   Future<Result<Weather>> getByLocation({
     required double latitude,
     required double longitude,
-    bool includeForecast = true,
-    String language = 'en',
+    bool includeHourly = false,
+    bool includeDaily = false,
+    int hourlyCount = 24,
+    int dailyCount = 7,
   }) async {
     try {
       // Use coordinates to get location ID
@@ -88,36 +88,39 @@ class QWeatherProvider implements WeatherProvider {
       // Reuse getByCity with location ID
       return await _getByLocationId(
         locationId: locationId,
-        includeForecast: includeForecast,
-        language: language,
+        includeHourly: includeHourly,
+        includeDaily: includeDaily,
+        hourlyCount: hourlyCount,
+        dailyCount: dailyCount,
       );
     } on WeatherError catch (e) {
       return Result.failure(e);
     } catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.unknown,
-          message: 'Failed to get weather by location: $e',
-        ),
+        WeatherError.unknown('Failed to get weather by location: $e'),
       );
     }
   }
 
   @override
-  Future<Result<List<City>>> searchCities({
+  Future<Result<CitySearchResult>> searchCities({
     required String query,
-    String language = 'en',
+    int limit = 5,
   }) async {
     try {
-      final cities = await _searchCity(query, language);
-      final cityList = cities.map((c) => c.toCity()).toList();
-      return Result.success(cityList);
+      final cities = await _searchCity(query, config.language);
+      final limitedCities = cities.take(limit).toList();
+      final cityList = limitedCities.map((c) => c.toCity()).toList();
+
+      return Result.success(
+        CitySearchResult(
+          cities: cityList,
+          hasMore: cities.length > limit,
+        ),
+      );
     } catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.unknown,
-          message: 'Failed to search cities: $e',
-        ),
+        WeatherError.unknown('Failed to search cities: $e'),
       );
     }
   }
@@ -167,28 +170,39 @@ class QWeatherProvider implements WeatherProvider {
 
   Future<Result<Weather>> _getByLocationId({
     required String locationId,
-    bool includeForecast = true,
-    String language = 'en',
+    bool includeHourly = false,
+    bool includeDaily = false,
+    int hourlyCount = 24,
+    int dailyCount = 7,
   }) async {
     final current = await _getCurrentWeather(locationId);
 
     List<HourlyForecast>? hourly;
     List<DailyForecast>? daily;
 
-    if (includeForecast) {
-      hourly = await _getHourlyForecast(locationId);
-      daily = await _getDailyForecast(locationId);
+    if (includeHourly) {
+      hourly = await _getHourlyForecast(locationId, hourlyCount);
+    }
+
+    if (includeDaily) {
+      daily = await _getDailyForecast(locationId, dailyCount);
     }
 
     final weather = Weather(
-      city: City(name: 'Unknown', country: 'CN'),
+      city: City(
+        name: 'Unknown',
+        country: 'CN',
+        region: '',
+        latitude: 0.0,
+        longitude: 0.0,
+      ),
       condition: _parseCondition(current.condition),
       currentTemperature: current.temp.toDouble(),
-      humidity: current.humidity.toDouble(),
+      humidity: current.humidity,
       windSpeed: current.windSpeed.toDouble(),
-      feelsLike: current.feelsLike?.toDouble(),
-      hourly: hourly,
-      daily: daily,
+      currentTime: DateTime.now(),
+      hourlyForecast: hourly ?? [],
+      dailyForecast: daily ?? [],
     );
 
     return Result.success(weather);
@@ -206,31 +220,42 @@ class QWeatherProvider implements WeatherProvider {
     );
   }
 
-  Future<List<HourlyForecast>> _getHourlyForecast(String locationId) async {
+  Future<List<HourlyForecast>> _getHourlyForecast(
+    String locationId,
+    int count,
+  ) async {
     // In production: Call QWeather Hourly Forecast API
     // https://devapi.qweather.com/v7/weather/24h?location={locationId}&key={key}
     final now = DateTime.now();
-    return List.generate(24, (index) {
+    return List.generate(count, (index) {
       final time = now.add(Duration(hours: index));
       return HourlyForecast(
         time: time,
         temperature: 20.0 + (index % 10),
         condition: WeatherCondition.clear,
+        humidity: 60,
+        windSpeed: 10.0,
       );
     });
   }
 
-  Future<List<DailyForecast>> _getDailyForecast(String locationId) async {
+  Future<List<DailyForecast>> _getDailyForecast(
+    String locationId,
+    int count,
+  ) async {
     // In production: Call QWeather Daily Forecast API
     // https://devapi.qweather.com/v7/weather/7d?location={locationId}&key={key}
     final today = DateTime.now();
-    return List.generate(7, (index) {
+    return List.generate(count, (index) {
       final date = today.add(Duration(days: index));
       return DailyForecast(
         date: date,
-        maxTemperature: 25.0 + (index % 5),
-        minTemperature: 15.0 + (index % 5),
+        maxTemp: 25.0 + (index % 5),
+        minTemp: 15.0 + (index % 5),
         condition: WeatherCondition.clear,
+        sunrise: DateTime(date.year, date.month, date.day, 6, 0),
+        sunset: DateTime(date.year, date.month, date.day, 18, 0),
+        uvIndex: 5,
       );
     });
   }
@@ -270,7 +295,7 @@ class QWeatherProvider implements WeatherProvider {
       case '317':
       case '318':
       case '399':
-        return WeatherCondition.rainy;
+        return WeatherCondition.rain;
       // Snow
       case '400':
       case '401':
@@ -284,9 +309,12 @@ class QWeatherProvider implements WeatherProvider {
       case '409':
       case '410':
       case '499':
-        return WeatherCondition.snowy;
+        return WeatherCondition.snow;
       // Thunderstorm
-      case '302':
+      case '210':
+      case '211':
+      case '212':
+      case '213':
         return WeatherCondition.thunderstorm;
       // Fog
       case '501':
@@ -303,6 +331,9 @@ class QWeatherProvider implements WeatherProvider {
       case '514':
       case '515':
         return WeatherCondition.fog;
+      // Mist
+      case '500':
+        return WeatherCondition.mist;
       default:
         return WeatherCondition.unknown;
     }
