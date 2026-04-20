@@ -30,11 +30,18 @@ class WeatherExamplePage extends StatefulWidget {
 
 class _WeatherExamplePageState extends State<WeatherExamplePage> {
   final TextEditingController _cityController = TextEditingController(text: 'Beijing');
-  final WeatherService _weatherService = WeatherService(
-    apiKey: 'YOUR_API_KEY_HERE', // Replace with your actual API key
-  );
-  Result<WeatherData>? _result;
+  late final WeatherService _weatherService;
+  Result<Weather>? _result;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _weatherService = WeatherService.withWeatherAPI(
+      apiKey: 'YOUR_API_KEY_HERE', // Replace with your actual API key
+      cache: WeatherCache(),
+    );
+  }
 
   Future<void> _fetchWeather() async {
     setState(() {
@@ -101,7 +108,7 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
     );
   }
 
-  Widget _buildWeatherCard(WeatherData weather) {
+  Widget _buildWeatherCard(Weather weather) {
     return Card(
       elevation: 4,
       child: Padding(
@@ -110,11 +117,11 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              weather.location.name,
+              weather.city.name,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             Text(
-              '${weather.location.region}, ${weather.location.country}',
+              '${weather.city.region}, ${weather.city.country}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -123,25 +130,24 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
             Row(
               children: [
                 Icon(
-                  _getWeatherIcon(weather.current.conditionText),
+                  _getWeatherIcon(weather.condition.name),
                   size: 48,
                   color: Colors.blue,
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  '${weather.current.tempC.toStringAsFixed(1)}°C',
+                  '${weather.currentTemperature.toStringAsFixed(1)}°C',
                   style: Theme.of(context).textTheme.displayLarge,
                 ),
               ],
             ),
             Text(
-              weather.current.conditionText,
+              weather.condition.name,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            _buildDetailRow('Humidity', '${weather.current.humidity}%'),
-            _buildDetailRow('Wind Speed', '${weather.current.windKph.toStringAsFixed(1)} km/h'),
-            _buildDetailRow('UV Index', '${weather.current.uvIndex}'),
+            _buildDetailRow('Humidity', '${weather.humidity}%'),
+            _buildDetailRow('Wind Speed', '${weather.windSpeed.toStringAsFixed(1)} km/h'),
             const Divider(height: 32),
             Text(
               'Hourly Forecast',
@@ -152,9 +158,9 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
               height: 100,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: weather.hourly.take(8).length,
+                itemCount: weather.hourlyForecast.take(8).length,
                 itemBuilder: (context, index) {
-                  final hourly = weather.hourly[index];
+                  final hourly = weather.hourlyForecast[index];
                   return _buildHourlyItem(hourly);
                 },
               ),
@@ -165,7 +171,7 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            ...weather.daily.map((daily) => _buildDailyItem(daily)),
+            ...weather.dailyForecast.map((daily) => _buildDailyItem(daily)),
           ],
         ),
       ),
@@ -183,12 +189,12 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Icon(
-              _getWeatherIcon(hourly.conditionText),
+              _getWeatherIcon(hourly.condition.name),
               size: 24,
               color: Colors.blue,
             ),
             Text(
-              '${hourly.tempC.toStringAsFixed(0)}°C',
+              '${hourly.temperature.toStringAsFixed(0)}°C',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -210,18 +216,18 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
               ),
             ),
             Icon(
-              _getWeatherIcon(daily.conditionText),
+              _getWeatherIcon(daily.condition.name),
               color: Colors.blue,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                daily.conditionText,
+                daily.condition.name,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
             Text(
-              '${daily.maxTempC.toStringAsFixed(0)}° / ${daily.minTempC.toStringAsFixed(0)}°',
+              '${daily.maxTemp.toStringAsFixed(0)}° / ${daily.minTemp.toStringAsFixed(0)}°',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -286,21 +292,21 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
     );
   }
 
-  IconData _getWeatherIcon(String condition) {
-    final conditionLower = condition.toLowerCase();
-    if (conditionLower.contains('sun') || conditionLower.contains('clear')) {
+  IconData _getWeatherIcon(String conditionName) {
+    if (conditionName == WeatherCondition.clear.name) {
       return Icons.wb_sunny;
-    } else if (conditionLower.contains('cloud')) {
+    } else if (conditionName == WeatherCondition.partlyCloudy.name || conditionName == WeatherCondition.cloudy.name) {
       return Icons.cloud;
-    } else if (conditionLower.contains('rain')) {
+    } else if (conditionName == WeatherCondition.rain.name) {
       return Icons.water_drop;
-    } else if (conditionLower.contains('snow')) {
+    } else if (conditionName == WeatherCondition.snow.name) {
       return Icons.ac_unit;
-    } else if (conditionLower.contains('thunder')) {
+    } else if (conditionName == WeatherCondition.thunderstorm.name) {
       return Icons.flash_on;
-    } else {
+    } else if (conditionName == WeatherCondition.fog.name || conditionName == WeatherCondition.mist.name) {
       return Icons.cloud_queue;
     }
+    return Icons.cloud;
   }
 
   String _getErrorTypeName(WeatherErrorType type) {
