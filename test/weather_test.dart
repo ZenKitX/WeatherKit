@@ -117,12 +117,12 @@ void main() {
         time: time,
         tempC: 26.0,
         conditionText: 'Cloudy',
-        chanceOfRain: 30,
+        isDay: true,
       );
       expect(forecast.time, time);
       expect(forecast.tempC, 26.0);
       expect(forecast.conditionText, 'Cloudy');
-      expect(forecast.chanceOfRain, 30);
+      expect(forecast.isDay, true);
     });
   });
 
@@ -134,13 +134,17 @@ void main() {
         maxTempC: 30.0,
         minTempC: 20.0,
         conditionText: 'Sunny',
-        chanceOfRain: 10,
+        sunrise: '06:00',
+        sunset: '18:00',
+        uvIndex: 8,
       );
       expect(forecast.date, date);
       expect(forecast.maxTempC, 30.0);
       expect(forecast.minTempC, 20.0);
       expect(forecast.conditionText, 'Sunny');
-      expect(forecast.chanceOfRain, 10);
+      expect(forecast.sunrise, '06:00');
+      expect(forecast.sunset, '18:00');
+      expect(forecast.uvIndex, 8);
     });
   });
 

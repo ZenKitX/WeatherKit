@@ -229,7 +229,7 @@ void benchmarkDataParsing() {
       time: DateTime.now(),
       tempC: 26.0,
       conditionText: 'Cloudy',
-      chanceOfRain: 30,
+      isDay: true,
     );
   }
 
@@ -249,7 +249,9 @@ void benchmarkDataParsing() {
       maxTempC: 30.0,
       minTempC: 20.0,
       conditionText: 'Sunny',
-      chanceOfRain: 10,
+      sunrise: '06:00',
+      sunset: '18:00',
+      uvIndex: 8,
     );
   }
 

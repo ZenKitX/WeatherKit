@@ -24,8 +24,8 @@ class WeatherService {
 
   WeatherService._internal({
     required this.apiKey,
-    this.cache,
     required this.baseUrl,
+    this.cache,
   })  : _dio = Dio() {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);

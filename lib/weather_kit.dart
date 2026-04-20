@@ -20,6 +20,8 @@
 /// );
 /// ```
 
+library;
+
 export 'src/services/weather_service.dart';
 export 'src/models/weather_model.dart';
 export 'src/cache/weather_cache.dart';
