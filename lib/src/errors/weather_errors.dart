@@ -21,6 +21,12 @@ enum WeatherErrorType {
 
 /// Weather error representation
 class WeatherError {
+  /// Type of error
+  final WeatherErrorType type;
+
+  /// Error message
+  final String message;
+
   /// Create network error
   factory WeatherError.network(String message) {
     return WeatherError(type: WeatherErrorType.network, message: message);
@@ -51,12 +57,6 @@ class WeatherError {
     return WeatherError(type: WeatherErrorType.unknown, message: message);
   }
 
-  /// Type of error
-  final WeatherErrorType type;
-
-  /// Error message
-  final String message;
-
   WeatherError({
     required this.type,
     required this.message,
@@ -70,6 +70,15 @@ class WeatherError {
 
 /// Result type for weather service operations
 class Result<T> {
+  /// Success data
+  final T? data;
+
+  /// Error information
+  final WeatherError? error;
+
+  /// Whether the operation was successful
+  final bool isSuccess;
+
   /// Create a success result
   factory Result.success(T data) {
     return Result._(
@@ -87,15 +96,6 @@ class Result<T> {
       isSuccess: false,
     );
   }
-
-  /// Success data
-  final T? data;
-
-  /// Error information
-  final WeatherError? error;
-
-  /// Whether the operation was successful
-  final bool isSuccess;
 
   Result._({
     required this.data,
