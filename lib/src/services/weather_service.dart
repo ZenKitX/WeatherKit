@@ -14,11 +14,6 @@ class WeatherService {
     _dio.options.receiveTimeout = const Duration(seconds: 30);
   }
 
-  final Dio _dio;
-  final String apiKey;
-  final WeatherCache? cache;
-  final String baseUrl;
-
   /// Create weather service
   ///
   /// [apiKey] - WeatherAPI.com API key
@@ -35,6 +30,11 @@ class WeatherService {
       baseUrl: baseUrl ?? 'https://api.weatherapi.com/v1',
     );
   }
+
+  final Dio _dio;
+  final String apiKey;
+  final WeatherCache? cache;
+  final String baseUrl;
 
   /// Get weather by city name
   ///
