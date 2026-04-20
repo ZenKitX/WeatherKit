@@ -25,14 +25,64 @@ dependencies:
 
 ## Usage
 
-### Basic Usage
+### Secure API Key Management (Recommended)
+
+**Security First**: Never hardcode API keys in your code. Use one of the following methods:
+
+#### Method 1: Using --dart-define (Best for CI/CD)
+
+```bash
+flutter run --dart-define=WEATHER_API_KEY=your_actual_key
+```
+
+```dart
+final weatherService = WeatherService.withSecureKey(
+  keyName: 'WEATHER_API_KEY',
+  cache: WeatherCache(),
+);
+```
+
+#### Method 2: Using .env file (Best for Development)
+
+1. Create a `.env` file in your project root:
+```env
+WEATHER_API_KEY=your_actual_key_here
+```
+
+2. Add `.env` to `.gitignore`:
+```
+.env
+.env.local
+```
+
+3. Load and use:
+```dart
+// In main()
+await SecureKeyStorage.loadEnvFile();
+
+final weatherService = WeatherService.withSecureKey(
+  keyName: 'WEATHER_API_KEY',
+  cache: WeatherCache(),
+);
+```
+
+#### Method 3: Legacy (Not Recommended)
+
+```dart
+final weatherService = WeatherService.withWeatherAPI(
+  apiKey: 'your_api_key_here',
+  cache: WeatherCache(),
+);
+```
+
+### Basic Usage (Without Security)
 
 ```dart
 import 'package:weather_kit/weather_kit.dart';
 
 void main() async {
   // Initialize weather service
-  final weatherService = WeatherService(
+  final weatherService = WeatherService.withWeatherAPI(
     apiKey: 'your_api_key_here',
     cache: WeatherCache(), // Optional cache
   );
@@ -127,6 +177,22 @@ Get your free API key from [WeatherAPI.com](https://www.weatherapi.com/):
 - Free tier: 1 million calls per month
 - No credit card required
 - Includes current weather, forecast, and more
+
+### ⚠️ Security Best Practices
+
+1. **Never** commit API keys to Git
+2. Use `.env` files for local development
+3. Use `--dart-define` for CI/CD
+4. Use `WeatherService.withSecureKey()` for automatic key validation
+5. Add `.env` to `.gitignore`
+
+### Example .gitignore
+
+```
+.env
+.env.local
+.env.*.local
+```
 
 ## License
 

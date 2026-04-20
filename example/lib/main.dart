@@ -37,9 +37,24 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
   @override
   void initState() {
     super.initState();
-    _weatherService = WeatherService.withWeatherAPI(
-      apiKey: 'YOUR_API_KEY_HERE', // Replace with your actual API key
+    _loadWeatherService();
+  }
+
+  Future<void> _loadWeatherService() async {
+    // Load .env file if available
+    try {
+      await SecureKeyStorage.loadEnvFile();
+    } catch (e) {
+      // .env file not found is OK, keys might be provided via dart-define
+    }
+
+    // Create service with secure key loading
+    _weatherService = WeatherService.withSecureKey(
+      keyName: 'WEATHER_API_KEY',
+      hardcodedValue: 'YOUR_API_KEY_HERE', // Only used as fallback
+      allowHardcoded: false,
       cache: WeatherCache(),
+      validateOnStart: true,
     );
   }
 
