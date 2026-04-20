@@ -62,16 +62,25 @@ class WeatherService {
   }) async {
     final cacheKey = city;
 
+    // Check for in-flight request (request deduplication)
+    if (cache != null && cache!.hasInFlightRequest(cacheKey)) {
+      final inFlight = cache!.getInFlightRequest(cacheKey);
+      if (inFlight != null) {
+        final result = await inFlight;
+        return Result.success(result);
+      }
+    }
+
     // Try cache first
     if (cache != null) {
       final cached = await cache!.get(cacheKey);
       if (cached != null) {
-        return Result.success(_convertCachedToDomain(cached));
+        return Result.success(cached);
       }
     }
 
     // Fetch from provider
-    final result = await provider.getByCity(
+    final request = provider.getByCity(
       city: city,
       includeHourly: includeHourly,
       includeDaily: includeDaily,
@@ -79,11 +88,16 @@ class WeatherService {
       dailyCount: dailyCount,
     );
 
+    // Register in-flight request
+    if (cache != null) {
+      cache!.registerInFlightRequest(cacheKey, request.then((r) => r.value!));
+    }
+
+    final result = await request;
+
     // Save to cache on success
-    if (result.isSuccess && cache != null) {
-      // Note: We would need to add domain->API conversion here
-      // For now, we'll cache the domain model directly
-      // This is a simplification; in production, you might want to cache the API response
+    if (result.isSuccess && cache != null && result.value != null) {
+      await cache!.set(cacheKey, result.value!);
     }
 
     return result;
@@ -107,16 +121,25 @@ class WeatherService {
   }) async {
     final cacheKey = '$latitude,$longitude';
 
+    // Check for in-flight request
+    if (cache != null && cache!.hasInFlightRequest(cacheKey)) {
+      final inFlight = cache!.getInFlightRequest(cacheKey);
+      if (inFlight != null) {
+        final result = await inFlight;
+        return Result.success(result);
+      }
+    }
+
     // Try cache first
     if (cache != null) {
       final cached = await cache!.get(cacheKey);
       if (cached != null) {
-        return Result.success(_convertCachedToDomain(cached));
+        return Result.success(cached);
       }
     }
 
     // Fetch from provider
-    final result = await provider.getByLocation(
+    final request = provider.getByLocation(
       latitude: latitude,
       longitude: longitude,
       includeHourly: includeHourly,
@@ -125,7 +148,34 @@ class WeatherService {
       dailyCount: dailyCount,
     );
 
+    // Register in-flight request
+    if (cache != null) {
+      cache!.registerInFlightRequest(cacheKey, request.then((r) => r.value!));
+    }
+
+    final result = await request;
+
+    // Save to cache on success
+    if (result.isSuccess && cache != null && result.value != null) {
+      await cache!.set(cacheKey, result.value!);
+    }
+
     return result;
+  }
+
+  /// Get cache statistics
+  CacheStats get cacheStats {
+    return cache?.stats ?? CacheStats();
+  }
+
+  /// Clear cache
+  void clearCache() {
+    cache?.clear();
+  }
+
+  /// Clear expired cache entries
+  void clearExpiredCache() {
+    cache?.clearExpired();
   }
 
   /// Search cities by name
@@ -137,17 +187,5 @@ class WeatherService {
     int limit = 5,
   }) async {
     return provider.searchCities(query: query, limit: limit);
-  }
-
-  /// Convert cached WeatherData to domain Weather
-  Weather _convertCachedToDomain(dynamic cached) {
-    // This is a simplified conversion
-    // In production, you might want to store the domain model directly
-    // or implement proper conversion
-    if (cached is Weather) {
-      return cached;
-    }
-    // Fallback - this would need proper implementation
-    return cached as Weather;
   }
 }

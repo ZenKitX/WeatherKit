@@ -109,6 +109,8 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
                   : const Text('Get Weather'),
             ),
             const SizedBox(height: 24),
+            _buildStatsCard(),
+            const SizedBox(height: 16),
             if (_result != null) _buildResult(),
           ],
         ),
@@ -187,6 +189,33 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
             ),
             const SizedBox(height: 8),
             ...weather.dailyForecast.map((daily) => _buildDailyItem(daily)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsCard() {
+    final stats = _weatherService.cacheStats;
+    return Card(
+      elevation: 2,
+      color: Colors.blue.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Cache Statistics',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            Text('Hits: ${stats.hits}'),
+            Text('Misses: ${stats.misses}'),
+            Text('Hit Rate: ${(stats.hitRate * 100).toStringAsFixed(1)}%'),
+            Text('Size: ${stats.size} entries'),
+            if (stats.totalSizeBytes > 0)
+              Text('Total: ${(stats.totalSizeBytes / 1024).toStringAsFixed(1)} KB'),
           ],
         ),
       ),
