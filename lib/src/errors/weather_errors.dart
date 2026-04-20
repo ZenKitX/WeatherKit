@@ -21,6 +21,11 @@ enum WeatherErrorType {
 
 /// Weather error representation
 class WeatherError {
+  WeatherError({
+    required this.type,
+    required this.message,
+  });
+
   /// Type of error
   final WeatherErrorType type;
 
@@ -57,11 +62,6 @@ class WeatherError {
     return WeatherError(type: WeatherErrorType.unknown, message: message);
   }
 
-  WeatherError({
-    required this.type,
-    required this.message,
-  });
-
   @override
   String toString() {
     return 'WeatherError: $type - $message';
@@ -70,6 +70,12 @@ class WeatherError {
 
 /// Result type for weather service operations
 class Result<T> {
+  Result._({
+    required this.data,
+    required this.error,
+    required this.isSuccess,
+  });
+
   /// Success data
   final T? data;
 
@@ -96,12 +102,6 @@ class Result<T> {
       isSuccess: false,
     );
   }
-
-  Result._({
-    required this.data,
-    required this.error,
-    required this.isSuccess,
-  });
 
   /// Handle result with callbacks
   R fold<R>(

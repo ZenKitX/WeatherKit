@@ -5,6 +5,20 @@ import '../errors/weather_errors.dart';
 
 /// Weather service for fetching weather data
 class WeatherService {
+  WeatherService._internal({
+    required this.apiKey,
+    required this.baseUrl,
+    this.cache,
+  })  : _dio = Dio() {
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
+  }
+
+  final Dio _dio;
+  final String apiKey;
+  final WeatherCache? cache;
+  final String baseUrl;
+
   /// Create weather service
   ///
   /// [apiKey] - WeatherAPI.com API key
@@ -21,20 +35,6 @@ class WeatherService {
       baseUrl: baseUrl ?? 'https://api.weatherapi.com/v1',
     );
   }
-
-  WeatherService._internal({
-    required this.apiKey,
-    required this.baseUrl,
-    this.cache,
-  })  : _dio = Dio() {
-    _dio.options.connectTimeout = const Duration(seconds: 30);
-    _dio.options.receiveTimeout = const Duration(seconds: 30);
-  }
-
-  final Dio _dio;
-  final String apiKey;
-  final WeatherCache? cache;
-  final String baseUrl;
 
   /// Get weather by city name
   ///
