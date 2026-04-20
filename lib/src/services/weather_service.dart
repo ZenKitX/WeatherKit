@@ -28,25 +28,24 @@ class WeatherService {
   /// Get weather by city name
   ///
   /// [city] - City name (e.g., "Beijing", "London")
-  /// [days] - Number of days for forecast (1-10, default: 7)
-  /// [lang] - Language code (default: zh for Chinese)
-  /// [aqi] - Include air quality data (default: yes)
-  /// [alerts] - Include weather alerts (default: yes)
-  Future<Result<WeatherModel>> getWeatherByCity({
+  /// [includeHourly] - Include hourly forecast (default: false)
+  /// [includeDaily] - Include daily forecast (default: false)
+  /// [hourlyCount] - Number of hours for forecast (default: 24)
+  /// [dailyCount] - Number of days for forecast (default: 7)
+  Future<Result<WeatherData>> getWeatherByCity({
     required String city,
-    int days = 7,
-    String lang = 'zh',
-    String aqi = 'yes',
-    String alerts = 'yes',
+    bool includeHourly = false,
+    bool includeDaily = false,
+    int hourlyCount = 24,
+    int dailyCount = 7,
   }) async {
+    final cacheKey = '$city';
+
     // Try cache first
     if (cache != null) {
-      final isCacheValid = await cache!.isCacheValid(city);
-      if (isCacheValid) {
-        final cachedWeather = await cache!.getWeather(city);
-        if (cachedWeather != null) {
-          return Result.success(cachedWeather);
-        }
+      final cached = await cache!.get(cacheKey);
+      if (cached != null) {
+        return Result.success(cached);
       }
     }
 
@@ -56,98 +55,61 @@ class WeatherService {
         queryParameters: {
           'key': apiKey,
           'q': city,
-          'days': days,
-          'aqi': aqi,
-          'alerts': alerts,
-          'lang': lang,
+          'days': dailyCount,
+          'aqi': 'no',
+          'alerts': 'no',
+          'lang': 'zh',
         },
       );
 
       if (response.statusCode == 200) {
-        final weather = WeatherModel.fromJson(response.data);
+        final weather = WeatherData.fromJson(response.data);
 
         // Save to cache
         if (cache != null) {
-          await cache!.saveWeather(city, weather);
+          await cache!.set(cacheKey, weather);
         }
 
         return Result.success(weather);
       } else if (response.statusCode == 401) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.apiKeyInvalid,
-            message: 'API Key 无效，请检查配置',
-            statusCode: response.statusCode,
-          ),
+          WeatherError.apiKey('API Key 无效，请检查配置'),
         );
       } else if (response.statusCode == 400) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.cityNotFound,
-            message: '城市不存在，请检查拼写',
-            statusCode: response.statusCode,
-          ),
+          WeatherError.locationNotFound('城市不存在，请检查拼写'),
         );
       } else if (response.statusCode == 403) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.serverError,
-            message: 'API 访问受限，请检查权限',
-            statusCode: response.statusCode,
-          ),
+          WeatherError.rateLimit('API 访问受限，请检查权限'),
         );
       } else {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.serverError,
-            message: '服务器错误 (${response.statusCode})',
-            statusCode: response.statusCode,
-          ),
+          WeatherError.unknown('服务器错误 (${response.statusCode})'),
         );
       }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.timeout,
-            message: '连接超时，请检查网络',
-            details: e.message,
-          ),
+          WeatherError.network('连接超时，请检查网络'),
         );
       } else if (e.type == DioExceptionType.connectionError) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.networkError,
-            message: '网络连接失败，请检查网络设置',
-            details: e.message,
-          ),
+          WeatherError.network('网络连接失败，请检查网络设置'),
         );
       } else if (e.type == DioExceptionType.badResponse) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.serverError,
-            message: '服务器响应错误',
-            statusCode: e.response?.statusCode,
-            details: e.message,
-          ),
+          WeatherError.parsing('服务器响应错误: ${e.response?.statusCode}'),
         );
       } else {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.unknown,
-            message: '未知错误',
-            details: e.message,
-          ),
+          WeatherError.unknown('未知错误: ${e.message}'),
         );
       }
     } catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.unknown,
-          message: '未知错误',
-          details: e.toString(),
-        ),
+        WeatherError.unknown('未知错误: ${e.toString()}'),
       );
     }
   }
@@ -156,24 +118,25 @@ class WeatherService {
   ///
   /// [lat] - Latitude
   /// [lon] - Longitude
-  /// [days] - Number of days for forecast (1-10, default: 7)
-  /// [lang] - Language code (default: zh for Chinese)
-  Future<Result<WeatherModel>> getWeatherByLocation({
+  /// [includeHourly] - Include hourly forecast (default: false)
+  /// [includeDaily] - Include daily forecast (default: false)
+  /// [hourlyCount] - Number of hours for forecast (default: 24)
+  /// [dailyCount] - Number of days for forecast (default: 7)
+  Future<Result<WeatherData>> getWeatherByCoordinates({
     required double lat,
     required double lon,
-    int days = 7,
-    String lang = 'zh',
+    bool includeHourly = false,
+    bool includeDaily = false,
+    int hourlyCount = 24,
+    int dailyCount = 7,
   }) async {
-    final locationKey = '$lat,$lon';
+    final cacheKey = '$lat,$lon';
 
     // Try cache first
     if (cache != null) {
-      final isCacheValid = await cache!.isCacheValid(locationKey);
-      if (isCacheValid) {
-        final cachedWeather = await cache!.getWeather(locationKey);
-        if (cachedWeather != null) {
-          return Result.success(cachedWeather);
-        }
+      final cached = await cache!.get(cacheKey);
+      if (cached != null) {
+        return Result.success(cached);
       }
     }
 
@@ -183,63 +146,43 @@ class WeatherService {
         queryParameters: {
           'key': apiKey,
           'q': '$lat,$lon',
-          'days': days,
-          'lang': lang,
+          'days': dailyCount,
+          'lang': 'zh',
         },
       );
 
       if (response.statusCode == 200) {
-        final weather = WeatherModel.fromJson(response.data);
+        final weather = WeatherData.fromJson(response.data);
 
         // Save to cache
         if (cache != null) {
-          await cache!.saveWeather(locationKey, weather);
+          await cache!.set(cacheKey, weather);
         }
 
         return Result.success(weather);
       } else {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.serverError,
-            message: '服务器错误 (${response.statusCode})',
-            statusCode: response.statusCode,
-          ),
+          WeatherError.unknown('服务器错误 (${response.statusCode})'),
         );
       }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionError) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.networkError,
-            message: '网络连接失败',
-            details: e.message,
-          ),
+          WeatherError.network('网络连接失败'),
         );
       } else if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.timeout,
-            message: '连接超时',
-            details: e.message,
-          ),
+          WeatherError.network('连接超时'),
         );
       } else {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.unknown,
-            message: '未知错误',
-            details: e.message,
-          ),
+          WeatherError.unknown('未知错误: ${e.message}'),
         );
       }
     } catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.unknown,
-          message: '未知错误',
-          details: e.toString(),
-        ),
+        WeatherError.unknown('未知错误: ${e.toString()}'),
       );
     }
   }
@@ -266,34 +209,17 @@ class WeatherService {
         return Result.success(locations);
       } else {
         return Result.failure(
-          WeatherError(
-            type: WeatherErrorType.serverError,
-            message: '服务器错误 (${response.statusCode})',
-            statusCode: response.statusCode,
-          ),
+          WeatherError.unknown('服务器错误 (${response.statusCode})'),
         );
       }
     } on DioException catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.networkError,
-          message: '网络连接失败',
-          details: e.message,
-        ),
+        WeatherError.network('网络连接失败'),
       );
     } catch (e) {
       return Result.failure(
-        WeatherError(
-          type: WeatherErrorType.unknown,
-          message: '未知错误',
-          details: e.toString(),
-        ),
+        WeatherError.unknown('未知错误: ${e.toString()}'),
       );
     }
-  }
-
-  /// Get current weather only (simplified)
-  Future<Result<WeatherModel>> getCurrentWeather(String location) async {
-    return getWeatherByCity(city: location, days: 1);
   }
 }
