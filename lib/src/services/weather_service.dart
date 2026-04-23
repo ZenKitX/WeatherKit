@@ -1,6 +1,7 @@
 import '../domain/weather_domain.dart';
 import '../providers/weather_provider.dart';
 import '../providers/weather_api_provider.dart';
+import '../providers/qweather_provider.dart';
 import '../cache/weather_cache.dart';
 import '../errors/weather_errors.dart';
 
@@ -30,6 +31,25 @@ class WeatherService {
       language: 'zh',
     );
     final provider = WeatherApiProvider.create(config);
+    return WeatherService._(provider: provider, cache: cache);
+  }
+
+  /// Create weather service with QWeather (和风天气) provider
+  ///
+  /// [apiKey] - QWeather API key
+  /// [cache] - Optional cache service
+  /// [baseUrl] - Base URL (default: https://devapi.qweather.com/v7)
+  factory WeatherService.withQWeather({
+    required String apiKey,
+    WeatherCache? cache,
+    String? baseUrl,
+  }) {
+    final config = WeatherProviderConfig(
+      apiKey: apiKey,
+      baseUrl: baseUrl,
+      language: 'zh',
+    );
+    final provider = QWeatherProvider.create(config);
     return WeatherService._(provider: provider, cache: cache);
   }
 
