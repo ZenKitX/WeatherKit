@@ -55,12 +55,14 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   format:
-    name: Check code formatting
+    name: Auto-format code
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -68,5 +70,26 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed .
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Format code
+        run: dart format .
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit formatted files
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "chore: auto-format code [skip ci]"
+          git push
