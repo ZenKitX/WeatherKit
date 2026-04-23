@@ -40,3 +40,4 @@ export 'src/domain/weather_domain.dart';
 export 'src/cache/weather_cache.dart';
 export 'src/errors/weather_errors.dart';
 export 'src/security/secure_key_storage.dart';
+export 'src/extensions/ecosystem_extensions.dart';
