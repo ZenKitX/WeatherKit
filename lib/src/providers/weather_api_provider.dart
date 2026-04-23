@@ -147,8 +147,8 @@ class WeatherApiAdapter {
       humidity: apiWeather.current.humidity,
       windSpeed: apiWeather.current.windKph,
       currentTime: DateTime.now(),
-      hourlyForecast: _convertHourly(apiWeather.forecast.hourly),
-      dailyForecast: _convertDaily(apiWeather.forecast.daily),
+      hourlyForecast: _convertHourly(apiWeather.hourly),
+      dailyForecast: _convertDaily(apiWeather.daily),
     );
   }
 

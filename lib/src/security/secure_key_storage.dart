@@ -190,7 +190,7 @@ extension WeatherServiceSecureFactory on WeatherService {
       }
     }
 
-    return withWeatherAPI(
+    return WeatherService.withWeatherAPI(
       apiKey: apiKey,
       cache: cache,
       baseUrl: baseUrl,
