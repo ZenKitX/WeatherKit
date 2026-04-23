@@ -159,7 +159,7 @@ class SecureKeyStorage {
 }
 
 /// Helper to create WeatherService with secure key loading
-extension WeatherServiceSecureFactory on WeatherService {
+class WeatherServiceSecureFactory {
   /// Create WeatherService with secure API key loading
   ///
   /// Automatically loads API key from multiple sources in priority order

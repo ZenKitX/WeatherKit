@@ -49,7 +49,7 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
     }
 
     // Create service with secure key loading
-    _weatherService = WeatherService.withSecureKey(
+    _weatherService = WeatherServiceSecureFactory.withSecureKey(
       keyName: 'WEATHER_API_KEY',
       hardcodedValue: 'YOUR_API_KEY_HERE', // Only used as fallback
       allowHardcoded: false,

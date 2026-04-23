@@ -12,12 +12,8 @@ void main() {
 
   // Warm up
   print('Warming up...');
-  final warmupService = WeatherService(
-    apiKey: 'test_key',
-    cache: WeatherCache(),
-  );
   for (int i = 0; i < 100; i++) {
-    warmupService._testInternalOperation();
+    _testInternalOperation();
   }
   print('Warm up complete.\n');
 
@@ -114,23 +110,19 @@ void benchmarkCacheOperations() {
   final cache = WeatherCache();
   const iterations = 10000;
 
-  final testData = WeatherData(
-    location: LocationInfo(
+  final testData = Weather(
+    city: City(
       name: 'Test City',
       region: 'Test Region',
       country: 'Test Country',
-      lat: 39.9042,
-      lon: 116.4074,
+      latitude: 39.9042,
+      longitude: 116.4074,
     ),
-    current: CurrentWeather(
-      tempC: 25.5,
-      conditionText: 'Sunny',
-      humidity: 60,
-      windKph: 10.5,
-      uvIndex: 5,
-    ),
-    hourly: [],
-    daily: [],
+    currentTemperature: 25.5,
+    condition: WeatherCondition.clear,
+    humidity: 60,
+    windSpeed: 10.5,
+    currentTime: DateTime.now(),
   );
 
   // Benchmark set
@@ -181,43 +173,23 @@ void benchmarkDataParsing() {
 
   const iterations = 10000;
 
-  // Benchmark LocationInfo creation
+  // Benchmark City creation
   final stopwatch = Stopwatch()..start();
 
   for (int i = 0; i < iterations; i++) {
-    LocationInfo(
+    City(
       name: 'Test City',
       region: 'Test Region',
       country: 'Test Country',
-      lat: 39.9042,
-      lon: 116.4074,
+      latitude: 39.9042,
+      longitude: 116.4074,
     );
   }
 
   stopwatch.stop();
   final avgTime1 = stopwatch.elapsedMicroseconds / iterations;
   print(
-    '  LocationInfo creation: ${avgTime1.toStringAsFixed(2)} μs/op ($iterations ops)',
-  );
-
-  // Benchmark CurrentWeather creation
-  stopwatch.reset();
-  stopwatch.start();
-
-  for (int i = 0; i < iterations; i++) {
-    CurrentWeather(
-      tempC: 25.5,
-      conditionText: 'Sunny',
-      humidity: 60,
-      windKph: 10.5,
-      uvIndex: 5,
-    );
-  }
-
-  stopwatch.stop();
-  final avgTime2 = stopwatch.elapsedMicroseconds / iterations;
-  print(
-    '  CurrentWeather creation: ${avgTime2.toStringAsFixed(2)} μs/op ($iterations ops)',
+    '  City creation: ${avgTime1.toStringAsFixed(2)} μs/op ($iterations ops)',
   );
 
   // Benchmark HourlyForecast creation
@@ -227,16 +199,17 @@ void benchmarkDataParsing() {
   for (int i = 0; i < iterations; i++) {
     HourlyForecast(
       time: DateTime.now(),
-      tempC: 26.0,
-      conditionText: 'Cloudy',
-      isDay: true,
+      temperature: 26.0,
+      condition: WeatherCondition.cloudy,
+      humidity: 60,
+      windSpeed: 10.5,
     );
   }
 
   stopwatch.stop();
-  final avgTime3 = stopwatch.elapsedMicroseconds / iterations;
+  final avgTime2 = stopwatch.elapsedMicroseconds / iterations;
   print(
-    '  HourlyForecast creation: ${avgTime3.toStringAsFixed(2)} μs/op ($iterations ops)',
+    '  HourlyForecast creation: ${avgTime2.toStringAsFixed(2)} μs/op ($iterations ops)',
   );
 
   // Benchmark DailyForecast creation
@@ -246,27 +219,52 @@ void benchmarkDataParsing() {
   for (int i = 0; i < iterations; i++) {
     DailyForecast(
       date: DateTime.now(),
-      maxTempC: 30.0,
-      minTempC: 20.0,
-      conditionText: 'Sunny',
-      sunrise: '06:00',
-      sunset: '18:00',
+      maxTemp: 30.0,
+      minTemp: 20.0,
+      condition: WeatherCondition.clear,
+      sunrise: DateTime(2024, 4, 23, 6, 0),
+      sunset: DateTime(2024, 4, 23, 18, 0),
       uvIndex: 8,
+    );
+  }
+
+  stopwatch.stop();
+  final avgTime3 = stopwatch.elapsedMicroseconds / iterations;
+  print(
+    '  DailyForecast creation: ${avgTime3.toStringAsFixed(2)} μs/op ($iterations ops)',
+  );
+
+  // Benchmark Weather creation
+  stopwatch.reset();
+  stopwatch.start();
+
+  for (int i = 0; i < iterations; i++) {
+    Weather(
+      city: City(
+        name: 'Beijing',
+        region: 'Beijing',
+        country: 'China',
+        latitude: 39.9042,
+        longitude: 116.4074,
+      ),
+      currentTemperature: 25.5,
+      condition: WeatherCondition.clear,
+      humidity: 60,
+      windSpeed: 10.5,
+      currentTime: DateTime.now(),
     );
   }
 
   stopwatch.stop();
   final avgTime4 = stopwatch.elapsedMicroseconds / iterations;
   print(
-    '  DailyForecast creation: ${avgTime4.toStringAsFixed(2)} μs/op ($iterations ops)',
+    '  Weather creation: ${avgTime4.toStringAsFixed(2)} μs/op ($iterations ops)',
   );
   print('');
 }
 
-// Extension method for testing
-extension WeatherServiceBenchmark on WeatherService {
-  void _testInternalOperation() {
-    final result = Result.success(42);
-    result.fold((data) => data, (error) => 0);
-  }
+// Internal operation for testing
+void _testInternalOperation() {
+  final result = Result.success(42);
+  result.fold((data) => data, (error) => 0);
 }
