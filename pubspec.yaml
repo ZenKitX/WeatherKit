@@ -8,7 +8,7 @@ documentation: https://github.com/ZenKitX/WeatherKit/blob/main/README.md
 
 environment:
   sdk: ^3.8.0
-  flutter: ">=3.24.0"
+  flutter: ">=3.27.0"
 
 dependencies:
   flutter:
