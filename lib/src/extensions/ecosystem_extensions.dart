@@ -105,7 +105,7 @@ class WeatherWithSolarTerm {
     final buffer = StringBuffer();
 
     buffer.write('📍 ${weather.city.name}，');
-    buffer.write('${weather.condition}，');
+    buffer.write('${weather.condition.description}，');
     buffer.write('${weather.currentTemperature}°C\n');
     buffer.write('🌱 Solar Term Integration\n');
 
