@@ -158,8 +158,7 @@ class HourlyForecast {
   }
 
   @override
-  String toString() =>
-      '${time.hour}:00 - $tempC°C, $conditionText';
+  String toString() => '${time.hour}:00 - $tempC°C, $conditionText';
 }
 
 /// Daily weather forecast
@@ -180,7 +179,8 @@ class DailyForecast {
       date: DateTime.parse(json['date']),
       maxTempC: (json['maxtemp_c'] ?? 0).toDouble(),
       minTempC: (json['mintemp_c'] ?? 0).toDouble(),
-      conditionText: json['condition_text'] ?? json['day']?['condition']?['text'] ?? '',
+      conditionText:
+          json['condition_text'] ?? json['day']?['condition']?['text'] ?? '',
       sunrise: json['sunrise'] ?? '',
       sunset: json['sunset'] ?? '',
       uvIndex: json['uv'] ?? 0,
@@ -237,21 +237,18 @@ class WeatherData {
   /// Create WeatherData from WeatherAPI response
   factory WeatherData.fromJson(Map<String, dynamic> json) {
     final forecastDayList = json['forecast']?['forecastday'] as List?;
-    
-    final hourlyList = forecastDayList
-            ?.expand((day) {
-              final hourData = day['hour'] as List?;
-              if (hourData == null) return [];
-              return hourData.map((h) => HourlyForecast.fromJson(h));
-            })
-            .toList() ??
+
+    final hourlyList = forecastDayList?.expand((day) {
+          final hourData = day['hour'] as List?;
+          if (hourData == null) return [];
+          return hourData.map((h) => HourlyForecast.fromJson(h));
+        }).toList() ??
         [];
-    
-    final dailyList = forecastDayList
-            ?.map((day) => DailyForecast.fromJson(day))
-            .toList() ??
-        [];
-    
+
+    final dailyList =
+        forecastDayList?.map((day) => DailyForecast.fromJson(day)).toList() ??
+            [];
+
     return WeatherData(
       location: LocationInfo.fromJson(json),
       current: CurrentWeather.fromJson(json),

@@ -17,14 +17,20 @@ enum WeatherCondition {
 /// Convert WeatherAPI condition to domain model
 WeatherCondition conditionFromWeatherAPI(String condition) {
   final text = condition.toLowerCase();
-  if (text.contains('rain') || text.contains('drizzle') || text.contains('shower')) {
+  if (text.contains('rain') ||
+      text.contains('drizzle') ||
+      text.contains('shower')) {
     return WeatherCondition.rain;
-  } else if (text.contains('snow') || text.contains('sleet') || text.contains('blizzard')) {
+  } else if (text.contains('snow') ||
+      text.contains('sleet') ||
+      text.contains('blizzard')) {
     return WeatherCondition.snow;
   } else if (text.contains('thunder') || text.contains('storm')) {
     return WeatherCondition.thunderstorm;
   } else if (text.contains('cloud')) {
-    return text.contains('partly') ? WeatherCondition.partlyCloudy : WeatherCondition.cloudy;
+    return text.contains('partly')
+        ? WeatherCondition.partlyCloudy
+        : WeatherCondition.cloudy;
   } else if (text.contains('fog') || text.contains('haze')) {
     return WeatherCondition.fog;
   } else if (text.contains('mist')) {

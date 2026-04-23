@@ -145,7 +145,8 @@ class QWeatherProvider implements WeatherProvider {
           lon: 116.4074,
         ),
       ];
-    } else if (query.contains('上海') || query.toLowerCase().contains('shanghai')) {
+    } else if (query.contains('上海') ||
+        query.toLowerCase().contains('shanghai')) {
       return [
         _QWeatherLocation(
           name: '上海',

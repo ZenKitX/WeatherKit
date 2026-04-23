@@ -50,7 +50,8 @@ class WeatherApiProvider implements WeatherProvider {
         final weather = WeatherApiAdapter.toDomain(apiWeather);
         return Result.success(weather);
       } else {
-        return Result.failure(WeatherError.network('HTTP ${response.statusCode}'));
+        return Result.failure(
+            WeatherError.network('HTTP ${response.statusCode}'));
       }
     } on DioException catch (e) {
       return Result.failure(WeatherError.network(e.message ?? 'Network error'));
@@ -86,7 +87,8 @@ class WeatherApiProvider implements WeatherProvider {
         final weather = WeatherApiAdapter.toDomain(apiWeather);
         return Result.success(weather);
       } else {
-        return Result.failure(WeatherError.network('HTTP ${response.statusCode}'));
+        return Result.failure(
+            WeatherError.network('HTTP ${response.statusCode}'));
       }
     } on DioException catch (e) {
       return Result.failure(WeatherError.network(e.message ?? 'Network error'));
@@ -120,7 +122,8 @@ class WeatherApiProvider implements WeatherProvider {
           hasMore: data.length > limit,
         ));
       } else {
-        return Result.failure(WeatherError.network('HTTP ${response.statusCode}'));
+        return Result.failure(
+            WeatherError.network('HTTP ${response.statusCode}'));
       }
     } on DioException catch (e) {
       return Result.failure(WeatherError.network(e.message ?? 'Network error'));
@@ -173,8 +176,10 @@ class WeatherApiAdapter {
         final hour = int.parse(timeParts[0]);
         final minute = int.parse(timeParts[1]);
         final isPM = parts.length > 1 && parts[1] == 'PM';
-        final adjustedHour = isPM && hour != 12 ? hour + 12 : (hour == 12 && !isPM ? 0 : hour);
-        return DateTime(d.date.year, d.date.month, d.date.day, adjustedHour, minute);
+        final adjustedHour =
+            isPM && hour != 12 ? hour + 12 : (hour == 12 && !isPM ? 0 : hour);
+        return DateTime(
+            d.date.year, d.date.month, d.date.day, adjustedHour, minute);
       }
 
       return DailyForecast(

@@ -1,7 +1,7 @@
 /// Ecosystem integration extensions for WeatherKit
 ///
 /// Provides seamless integration with LocationKit and SolarTermKit
-/// 
+///
 /// Note: This requires LocationKit and SolarTermKit to be available.
 /// If these packages are not installed, the extension methods will throw
 /// descriptive error messages.
@@ -23,13 +23,12 @@ extension WeatherLocationExtension on WeatherService {
   /// Note: This requires the location_kit package to be available
   Future<Result<Weather>> getWeatherForCurrentLocation() async {
     throw UnimplementedError(
-      'getWeatherForCurrentLocation() requires LocationKit to be installed.\n'
-      'Please add location_kit to your pubspec.yaml:\n'
-      '  dependencies:\n'
-      '    location_kit: ^0.1.0\n'
-      'Then import it in your code:\n'
-      '  import "package:location_kit/location_kit.dart";\n'
-    );
+        'getWeatherForCurrentLocation() requires LocationKit to be installed.\n'
+        'Please add location_kit to your pubspec.yaml:\n'
+        '  dependencies:\n'
+        '    location_kit: ^0.1.0\n'
+        'Then import it in your code:\n'
+        '  import "package:location_kit/location_kit.dart";\n');
   }
 
   /// Get weather for current location with optional city fallback
@@ -39,13 +38,12 @@ extension WeatherLocationExtension on WeatherService {
     String? fallbackCity,
   }) async {
     throw UnimplementedError(
-      'getWeatherForCurrentLocationWithFallback() requires LocationKit to be installed.\n'
-      'Please add location_kit to your pubspec.yaml:\n'
-      '  dependencies:\n'
-      '    location_kit: ^0.1.0\n'
-      'Then import it in your code:\n'
-      '  import "package:location_kit/location_kit.dart";\n'
-    );
+        'getWeatherForCurrentLocationWithFallback() requires LocationKit to be installed.\n'
+        'Please add location_kit to your pubspec.yaml:\n'
+        '  dependencies:\n'
+        '    location_kit: ^0.1.0\n'
+        'Then import it in your code:\n'
+        '  import "package:location_kit/location_kit.dart";\n');
   }
 }
 
@@ -60,26 +58,24 @@ extension WeatherSolarTermExtension on WeatherService {
     required String city,
   }) async {
     throw UnimplementedError(
-      'getWeatherWithSolarTerm() requires SolarTermKit to be installed.\n'
-      'Please add solar_term_kit to your pubspec.yaml:\n'
-      '  dependencies:\n'
-      '    solar_term_kit: ^0.1.0\n'
-      'Then import it in your code:\n'
-      '  import "package:solar_term_kit/solar_term_kit.dart";\n'
-    );
+        'getWeatherWithSolarTerm() requires SolarTermKit to be installed.\n'
+        'Please add solar_term_kit to your pubspec.yaml:\n'
+        '  dependencies:\n'
+        '    solar_term_kit: ^0.1.0\n'
+        'Then import it in your code:\n'
+        '  import "package:solar_term_kit/solar_term_kit.dart";\n');
   }
 
   /// Get weather for current location with solar term
   Future<Result<WeatherWithSolarTerm>>
       getWeatherWithSolarTermForCurrentLocation() async {
     throw UnimplementedError(
-      'getWeatherWithSolarTermForCurrentLocation() requires SolarTermKit to be installed.\n'
-      'Please add solar_term_kit to your pubspec.yaml:\n'
-      '  dependencies:\n'
-      '    solar_term_kit: ^0.1.0\n'
-      'Then import it in your code:\n'
-      '  import "package:solar_term_kit/solar_term_kit.dart";\n'
-    );
+        'getWeatherWithSolarTermForCurrentLocation() requires SolarTermKit to be installed.\n'
+        'Please add solar_term_kit to your pubspec.yaml:\n'
+        '  dependencies:\n'
+        '    solar_term_kit: ^0.1.0\n'
+        'Then import it in your code:\n'
+        '  import "package:solar_term_kit/solar_term_kit.dart";\n');
   }
 }
 

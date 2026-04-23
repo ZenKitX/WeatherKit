@@ -48,7 +48,8 @@ class WeatherError {
 
   /// Create location not found error
   factory WeatherError.locationNotFound(String message) {
-    return WeatherError(type: WeatherErrorType.locationNotFound, message: message);
+    return WeatherError(
+        type: WeatherErrorType.locationNotFound, message: message);
   }
 
   /// Create unknown error

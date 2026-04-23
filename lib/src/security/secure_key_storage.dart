@@ -123,7 +123,8 @@ class SecureKeyStorage {
   /// Prevalidate multiple API keys
   ///
   /// [keys] - Map of provider name to API key
-  static Map<String, KeyValidationResult> validateKeys(Map<String, String> keys) {
+  static Map<String, KeyValidationResult> validateKeys(
+      Map<String, String> keys) {
     final results = <String, KeyValidationResult>{};
     for (final entry in keys.entries) {
       results[entry.key] = validateApiKey(

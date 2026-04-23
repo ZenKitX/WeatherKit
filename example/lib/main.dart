@@ -29,7 +29,9 @@ class WeatherExamplePage extends StatefulWidget {
 }
 
 class _WeatherExamplePageState extends State<WeatherExamplePage> {
-  final TextEditingController _cityController = TextEditingController(text: 'Beijing');
+  final TextEditingController _cityController = TextEditingController(
+    text: 'Beijing',
+  );
   late final WeatherService _weatherService;
   Result<Weather>? _result;
   bool _isLoading = false;
@@ -139,9 +141,9 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
             ),
             Text(
               '${weather.city.region}, ${weather.city.country}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             ),
             const Divider(height: 32),
             Row(
@@ -164,7 +166,10 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
             ),
             const SizedBox(height: 16),
             _buildDetailRow('Humidity', '${weather.humidity}%'),
-            _buildDetailRow('Wind Speed', '${weather.windSpeed.toStringAsFixed(1)} km/h'),
+            _buildDetailRow(
+              'Wind Speed',
+              '${weather.windSpeed.toStringAsFixed(1)} km/h',
+            ),
             const Divider(height: 32),
             Text(
               'Hourly Forecast',
@@ -215,7 +220,9 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
             Text('Hit Rate: ${(stats.hitRate * 100).toStringAsFixed(1)}%'),
             Text('Size: ${stats.size} entries'),
             if (stats.totalSizeBytes > 0)
-              Text('Total: ${(stats.totalSizeBytes / 1024).toStringAsFixed(1)} KB'),
+              Text(
+                'Total: ${(stats.totalSizeBytes / 1024).toStringAsFixed(1)} KB',
+              ),
           ],
         ),
       ),
@@ -259,10 +266,7 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-            Icon(
-              _getWeatherIcon(daily.condition.name),
-              color: Colors.blue,
-            ),
+            Icon(_getWeatherIcon(daily.condition.name), color: Colors.blue),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -272,9 +276,9 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
             ),
             Text(
               '${daily.maxTemp.toStringAsFixed(0)}° / ${daily.minTemp.toStringAsFixed(0)}°',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -290,15 +294,15 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
           ),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -319,17 +323,14 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
                 const SizedBox(width: 8),
                 Text(
                   'Error: ${_getErrorTypeName(error.type)}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.red[700],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Colors.red[700]),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              error.message,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(error.message, style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
       ),
@@ -339,7 +340,8 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
   IconData _getWeatherIcon(String conditionName) {
     if (conditionName == WeatherCondition.clear.name) {
       return Icons.wb_sunny;
-    } else if (conditionName == WeatherCondition.partlyCloudy.name || conditionName == WeatherCondition.cloudy.name) {
+    } else if (conditionName == WeatherCondition.partlyCloudy.name ||
+        conditionName == WeatherCondition.cloudy.name) {
       return Icons.cloud;
     } else if (conditionName == WeatherCondition.rain.name) {
       return Icons.water_drop;
@@ -347,7 +349,8 @@ class _WeatherExamplePageState extends State<WeatherExamplePage> {
       return Icons.ac_unit;
     } else if (conditionName == WeatherCondition.thunderstorm.name) {
       return Icons.flash_on;
-    } else if (conditionName == WeatherCondition.fog.name || conditionName == WeatherCondition.mist.name) {
+    } else if (conditionName == WeatherCondition.fog.name ||
+        conditionName == WeatherCondition.mist.name) {
       return Icons.cloud_queue;
     }
     return Icons.cloud;

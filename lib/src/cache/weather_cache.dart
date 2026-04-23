@@ -128,8 +128,8 @@ class WeatherCache {
 
   int _hits = 0;
   int _misses = 0;
-  int get _totalSizeBytes => _memoryCache.values
-      .fold<int>(0, (sum, entry) => sum + entry.data.length);
+  int get _totalSizeBytes =>
+      _memoryCache.values.fold<int>(0, (sum, entry) => sum + entry.data.length);
 
   /// Get cached weather data
   Future<Weather?> get(String key) async {
@@ -320,10 +320,9 @@ class WeatherCache {
   Future<void> _clearDisk() async {
     final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys().where((key) =>
-      key.startsWith(_cacheKeyPrefix) ||
-      key.startsWith(_cacheTimeKeyPrefix) ||
-      key.startsWith(_cacheAccessKeyPrefix)
-    );
+        key.startsWith(_cacheKeyPrefix) ||
+        key.startsWith(_cacheTimeKeyPrefix) ||
+        key.startsWith(_cacheAccessKeyPrefix));
 
     for (final key in keys) {
       await prefs.remove(key);
@@ -333,16 +332,17 @@ class WeatherCache {
   /// Load cache from disk (call on startup)
   Future<void> loadFromDisk() async {
     final prefs = await SharedPreferences.getInstance();
-    final cacheKeys = prefs.getKeys().where((key) =>
-      key.startsWith(_cacheKeyPrefix)
-    );
+    final cacheKeys =
+        prefs.getKeys().where((key) => key.startsWith(_cacheKeyPrefix));
 
     for (final cacheKey in cacheKeys) {
       try {
         final data = prefs.getString(cacheKey);
         if (data != null) {
-          final timeKey = cacheKey.replaceFirst(_cacheKeyPrefix, _cacheTimeKeyPrefix);
-          final accessKey = cacheKey.replaceFirst(_cacheKeyPrefix, _cacheAccessKeyPrefix);
+          final timeKey =
+              cacheKey.replaceFirst(_cacheKeyPrefix, _cacheTimeKeyPrefix);
+          final accessKey =
+              cacheKey.replaceFirst(_cacheKeyPrefix, _cacheAccessKeyPrefix);
 
           final timeStr = prefs.getString(timeKey);
           final accessCount = prefs.getInt(accessKey) ?? 0;
@@ -376,11 +376,13 @@ class WeatherCache {
       windSpeed: (json['windSpeed'] ?? 0).toDouble(),
       currentTime: DateTime.parse(json['currentTime']),
       hourlyForecast: (json['hourlyForecast'] as List?)
-          ?.map((e) => _parseHourlyForecast(e))
-          .toList() ?? [],
+              ?.map((e) => _parseHourlyForecast(e))
+              .toList() ??
+          [],
       dailyForecast: (json['dailyForecast'] as List?)
-          ?.map((e) => _parseDailyForecast(e))
-          .toList() ?? [],
+              ?.map((e) => _parseDailyForecast(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -422,7 +424,8 @@ class WeatherCache {
   Future<Weather?> getWeather(String location) => get(location);
 
   @Deprecated('Use set() instead')
-  Future<void> saveWeather(String location, Weather weather) => set(location, weather);
+  Future<void> saveWeather(String location, Weather weather) =>
+      set(location, weather);
 
   @Deprecated('Use remove() instead')
   Future<void> clearCache(String location) async {
