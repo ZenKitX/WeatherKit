@@ -110,14 +110,14 @@ class WeatherService {
 
     // Register in-flight request
     if (cache != null) {
-      cache!.registerInFlightRequest(cacheKey, request.then((r) => r.value!));
+      cache!.registerInFlightRequest(cacheKey, request.then((r) => r.data!));
     }
 
     final result = await request;
 
     // Save to cache on success
-    if (result.isSuccess && cache != null && result.value != null) {
-      await cache!.set(cacheKey, result.value!);
+    if (result.isSuccess && cache != null && result.data != null) {
+      await cache!.set(cacheKey, result.data!);
     }
 
     return result;
@@ -170,14 +170,14 @@ class WeatherService {
 
     // Register in-flight request
     if (cache != null) {
-      cache!.registerInFlightRequest(cacheKey, request.then((r) => r.value!));
+      cache!.registerInFlightRequest(cacheKey, request.then((r) => r.data!));
     }
 
     final result = await request;
 
     // Save to cache on success
-    if (result.isSuccess && cache != null && result.value != null) {
-      await cache!.set(cacheKey, result.value!);
+    if (result.isSuccess && cache != null && result.data != null) {
+      await cache!.set(cacheKey, result.data!);
     }
 
     return result;

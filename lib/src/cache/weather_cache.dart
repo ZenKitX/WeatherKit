@@ -425,5 +425,5 @@ class WeatherCache {
   Future<void> saveWeather(String location, Weather weather) => set(location, weather);
 
   @Deprecated('Use remove() instead')
-  Future<void> clearCache(String location) => remove(location);
+  Future<void> clearCache(String location) async => await remove(location);
 }

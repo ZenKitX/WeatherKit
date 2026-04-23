@@ -76,104 +76,86 @@ void main() {
     });
   });
 
-  group('LocationInfo', () {
-    test('should create location info', () {
-      final location = LocationInfo(
+  group('City', () {
+    test('should create city', () {
+      final city = City(
         name: 'Beijing',
         region: 'Beijing',
         country: 'China',
-        lat: 39.9042,
-        lon: 116.4074,
+        latitude: 39.9042,
+        longitude: 116.4074,
       );
-      expect(location.name, 'Beijing');
-      expect(location.region, 'Beijing');
-      expect(location.country, 'China');
-      expect(location.lat, 39.9042);
-      expect(location.lon, 116.4074);
+      expect(city.name, 'Beijing');
+      expect(city.region, 'Beijing');
+      expect(city.country, 'China');
+      expect(city.latitude, 39.9042);
+      expect(city.longitude, 116.4074);
     });
   });
 
-  group('CurrentWeather', () {
-    test('should create current weather', () {
-      final weather = CurrentWeather(
-        tempC: 25.5,
-        conditionText: 'Sunny',
+  group('WeatherCondition', () {
+    test('should parse weather conditions', () {
+      expect(conditionFromWeatherAPI('rain'), WeatherCondition.rain);
+      expect(conditionFromWeatherAPI('sunny'), WeatherCondition.clear);
+      expect(conditionFromWeatherAPI('cloudy'), WeatherCondition.cloudy);
+      expect(conditionFromWeatherAPI('snow'), WeatherCondition.snow);
+    });
+  });
+
+  group('Weather', () {
+    test('should create weather', () {
+      final weather = Weather(
+        city: City(
+          name: 'Beijing',
+          region: 'Beijing',
+          country: 'China',
+          latitude: 39.9042,
+          longitude: 116.4074,
+        ),
+        currentTemperature: 25.5,
+        condition: WeatherCondition.clear,
         humidity: 60,
-        windKph: 10.5,
-        uvIndex: 5,
+        windSpeed: 10.0,
+        currentTime: DateTime.now(),
       );
-      expect(weather.tempC, 25.5);
-      expect(weather.conditionText, 'Sunny');
+      expect(weather.currentTemperature, 25.5);
+      expect(weather.condition, WeatherCondition.clear);
       expect(weather.humidity, 60);
-      expect(weather.windKph, 10.5);
-      expect(weather.uvIndex, 5);
+      expect(weather.windSpeed, 10.0);
     });
   });
 
   group('HourlyForecast', () {
     test('should create hourly forecast', () {
-      final time = DateTime(2024, 4, 20, 12, 0);
       final forecast = HourlyForecast(
-        time: time,
-        tempC: 26.0,
-        conditionText: 'Cloudy',
-        isDay: true,
+        time: DateTime.now(),
+        temperature: 20.0,
+        condition: WeatherCondition.clear,
+        humidity: 60,
+        windSpeed: 10.0,
       );
-      expect(forecast.time, time);
-      expect(forecast.tempC, 26.0);
-      expect(forecast.conditionText, 'Cloudy');
-      expect(forecast.isDay, true);
+      expect(forecast.temperature, 20.0);
+      expect(forecast.condition, WeatherCondition.clear);
+      expect(forecast.humidity, 60);
+      expect(forecast.windSpeed, 10.0);
     });
   });
 
   group('DailyForecast', () {
     test('should create daily forecast', () {
-      final date = DateTime(2024, 4, 20);
       final forecast = DailyForecast(
-        date: date,
-        maxTempC: 30.0,
-        minTempC: 20.0,
-        conditionText: 'Sunny',
-        sunrise: '06:00',
-        sunset: '18:00',
-        uvIndex: 8,
+        date: DateTime.now(),
+        maxTemp: 30.0,
+        minTemp: 20.0,
+        condition: WeatherCondition.clear,
+        sunrise: DateTime(2024, 4, 23, 6, 0),
+        sunset: DateTime(2024, 4, 23, 18, 0),
+        uvIndex: 5,
       );
-      expect(forecast.date, date);
-      expect(forecast.maxTempC, 30.0);
-      expect(forecast.minTempC, 20.0);
-      expect(forecast.conditionText, 'Sunny');
-      expect(forecast.sunrise, '06:00');
-      expect(forecast.sunset, '18:00');
-      expect(forecast.uvIndex, 8);
-    });
-  });
-
-  group('WeatherData', () {
-    test('should create complete weather data', () {
-      final location = LocationInfo(
-        name: 'Shanghai',
-        region: 'Shanghai',
-        country: 'China',
-        lat: 31.2304,
-        lon: 121.4737,
-      );
-      final current = CurrentWeather(
-        tempC: 28.0,
-        conditionText: 'Sunny',
-        humidity: 65,
-        windKph: 12.0,
-        uvIndex: 6,
-      );
-      final weatherData = WeatherData(
-        location: location,
-        current: current,
-        hourly: [],
-        daily: [],
-      );
-      expect(weatherData.location.name, 'Shanghai');
-      expect(weatherData.current.tempC, 28.0);
-      expect(weatherData.hourly, isEmpty);
-      expect(weatherData.daily, isEmpty);
+      expect(forecast.maxTemp, 30.0);
+      expect(forecast.minTemp, 20.0);
+      expect(forecast.condition, WeatherCondition.clear);
+      expect(forecast.uvIndex, 5);
     });
   });
 }

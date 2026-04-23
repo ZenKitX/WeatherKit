@@ -50,12 +50,12 @@ class WeatherApiProvider implements WeatherProvider {
         final weather = WeatherApiAdapter.toDomain(apiWeather);
         return Result.success(weather);
       } else {
-        return Result.failure(WeatherError.networkError('HTTP ${response.statusCode}'));
+        return Result.failure(WeatherError.network('HTTP ${response.statusCode}'));
       }
     } on DioException catch (e) {
-      return Result.failure(WeatherError.networkError(e.message ?? 'Network error'));
+      return Result.failure(WeatherError.network(e.message ?? 'Network error'));
     } catch (e) {
-      return Result.failure(WeatherError.unknownError(e.toString()));
+      return Result.failure(WeatherError.unknown(e.toString()));
     }
   }
 
@@ -86,12 +86,12 @@ class WeatherApiProvider implements WeatherProvider {
         final weather = WeatherApiAdapter.toDomain(apiWeather);
         return Result.success(weather);
       } else {
-        return Result.failure(WeatherError.networkError('HTTP ${response.statusCode}'));
+        return Result.failure(WeatherError.network('HTTP ${response.statusCode}'));
       }
     } on DioException catch (e) {
-      return Result.failure(WeatherError.networkError(e.message ?? 'Network error'));
+      return Result.failure(WeatherError.network(e.message ?? 'Network error'));
     } catch (e) {
-      return Result.failure(WeatherError.unknownError(e.toString()));
+      return Result.failure(WeatherError.unknown(e.toString()));
     }
   }
 
@@ -120,12 +120,12 @@ class WeatherApiProvider implements WeatherProvider {
           hasMore: data.length > limit,
         ));
       } else {
-        return Result.failure(WeatherError.networkError('HTTP ${response.statusCode}'));
+        return Result.failure(WeatherError.network('HTTP ${response.statusCode}'));
       }
     } on DioException catch (e) {
-      return Result.failure(WeatherError.networkError(e.message ?? 'Network error'));
+      return Result.failure(WeatherError.network(e.message ?? 'Network error'));
     } catch (e) {
-      return Result.failure(WeatherError.unknownError(e.toString()));
+      return Result.failure(WeatherError.unknown(e.toString()));
     }
   }
 }
@@ -156,23 +156,34 @@ class WeatherApiAdapter {
     return hourly.map((h) {
       return HourlyForecast(
         time: h.time,
-        temperature: h.temperature,
+        temperature: h.tempC,
         condition: conditionFromWeatherAPI(h.conditionText),
-        humidity: h.humidity,
-        windSpeed: h.windKph,
+        humidity: 0, // API hourly doesn't have humidity
+        windSpeed: 0.0, // API hourly doesn't have wind speed
       );
     }).toList();
   }
 
   static List<DailyForecast> _convertDaily(List<api.DailyForecast> daily) {
     return daily.map((d) {
+      // Parse sunrise/sunset from "HH:MM AM/PM" format
+      DateTime parseTime(String timeStr) {
+        final parts = timeStr.split(' ');
+        final timeParts = parts[0].split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+        final isPM = parts.length > 1 && parts[1] == 'PM';
+        final adjustedHour = isPM && hour != 12 ? hour + 12 : (hour == 12 && !isPM ? 0 : hour);
+        return DateTime(d.date.year, d.date.month, d.date.day, adjustedHour, minute);
+      }
+
       return DailyForecast(
         date: d.date,
-        maxTemp: d.maxTemp,
-        minTemp: d.minTemp,
+        maxTemp: d.maxTempC,
+        minTemp: d.minTempC,
         condition: conditionFromWeatherAPI(d.conditionText),
-        sunrise: d.sunrise,
-        sunset: d.sunset,
+        sunrise: parseTime(d.sunrise),
+        sunset: parseTime(d.sunset),
         uvIndex: d.uvIndex,
       );
     }).toList();

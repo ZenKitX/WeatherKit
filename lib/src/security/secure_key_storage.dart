@@ -3,6 +3,8 @@ library;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
+import '../services/weather_service.dart';
+import '../cache/weather_cache.dart';
 
 /// API key source
 enum KeySource {
@@ -64,7 +66,7 @@ class SecureKeyStorage {
     bool allowHardcoded = false,
   }) {
     // 1. Check dart-define
-    final dartDefineValue = const String.fromEnvironment(keyName);
+    final dartDefineValue = String.fromEnvironment(keyName);
     if (dartDefineValue.isNotEmpty) {
       return (dartDefineValue, KeySource.dartDefine);
     }
