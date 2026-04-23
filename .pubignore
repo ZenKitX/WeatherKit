@@ -1,8 +1,8 @@
-# Build outputs
-build/
+# Development files
 .dart_tool/
-
-# Coverage
+.packages
+.pub/
+build/
 coverage/
 
 # IDE
@@ -12,8 +12,23 @@ coverage/
 *.ipr
 *.iws
 
-# Misc
-.DS_Store
-*.log
+# Test files
+test/
+*_test.dart
 
-# Project specific
+# Documentation
+doc/
+CONTRIBUTING.md
+
+# CI/CD
+.github/
+
+# Build artifacts
+*.log
+*.tmp
+
+# Example app
+example/
+
+# Benchmark
+benchmark/

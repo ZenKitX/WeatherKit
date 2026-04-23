@@ -1,13 +1,18 @@
-# Changelog
+# Changelog | 更新日志
 
-All notable changes to the WeatherKit package will be documented in this file.
+## Table of Contents | 目录
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- [English](#english)
+- [中文](#中文)
 
-## [0.1.0] - 2024-04-20
+---
 
-### Added
+## English
+
+### [0.1.0] - 2024-04-20
+
+#### Added
+
 - Initial release of WeatherKit package
 - **Core Architecture**
   - Provider abstraction pattern for multiple weather data sources
@@ -42,24 +47,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Secure key loading
   - Ecosystem integration demo
 
-### Documentation
+#### Documentation
+
 - Comprehensive README with architecture overview
 - API documentation for all public interfaces
 - QWeather vs WeatherAPI comparison guide
 - Ecosystem integration guide
 
-### Tested On
+#### Tested On
+
 - Flutter 3.24.0+
-- Dart 3.11.0+
+- Dart 3.5.0+
 - iOS and Android platforms
 
 ---
 
-## [Unreleased]
+## 中文
 
-### Planned
-- Support for more weather providers
-- Unit tests for all providers
-- Integration tests for ecosystem features
-- GitHub Actions CI configuration
-- Pub.dev publication
+### [0.1.0] - 2024-04-20
+
+#### 新增
+
+- WeatherKit 包首次发布
+- **核心架构**
+  - 多数据源的 Provider 抽象模式
+  - 独立的域模型（Weather、City、Forecast）
+  - Result 类型错误处理
+  - 透明缓存，支持 TTL、LRU 淘汰和请求去重
+
+- **天气提供者**
+  - WeatherApiProvider (WeatherAPI.com)
+  - QWeatherProvider (和风天气)
+  - Provider 配置和切换
+
+- **安全性**
+  - 安全的 API 密钥存储
+  - 多种密钥来源（dart-define、.env、硬编码）
+  - API 密钥验证
+
+- **生态系统集成**
+  - LocationKit 集成用于当前位置查询
+  - SolarTermKit 集成用于节气信息
+  - 基于天气和节气的诗词推荐
+  - 一键位置 + 天气 + 诗词查询
+
+- **缓存**
+  - 可配置的缓存策略（TTL、最大条目数、stale-while-revalidate）
+  - 缓存统计和性能监控
+  - 使用 SharedPreferences 持久化存储
+
+- **示例**
+  - 基础天气查询
+  - Provider 切换示例
+  - 安全密钥加载
+  - 生态系统集成演示
+
+#### 文档
+
+- 包含架构概览的完整 README
+- 所有公共接口的 API 文档
+- QWeather vs WeatherAPI 对比指南
+- 生态系统集成指南
+
+#### 测试环境
+
+- Flutter 3.24.0+
+- Dart 3.5.0+
+- iOS 和 Android 平台
