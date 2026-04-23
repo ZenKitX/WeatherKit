@@ -37,7 +37,6 @@ export 'src/providers/weather_provider.dart';
 export 'src/providers/weather_api_provider.dart';
 export 'src/providers/qweather_provider.dart';
 export 'src/domain/weather_domain.dart';
-export 'src/models/weather_model.dart';
 export 'src/cache/weather_cache.dart';
 export 'src/errors/weather_errors.dart';
 export 'src/security/secure_key_storage.dart';

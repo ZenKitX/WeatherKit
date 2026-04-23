@@ -1,15 +1,22 @@
 # WeatherKit
 
-A weather service package for Flutter apps. Provides weather data fetching, parsing, and caching.
+> A powerful weather service package for Flutter apps with multi-provider support, location integration, and solar term poetry recommendations.
+
+[![CI](https://github.com/ZenKitX/WeatherKit/workflows/WeatherKit%20CI/badge.svg)](https://github.com/ZenKitX/WeatherKit/actions)
+[![pub package](https://img.shields.io/pub/v/weather_kit)](https://pub.dev/packages/weather_kit)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Features
 
-- ✅ Weather data fetching from WeatherAPI.com
-- ✅ Support for city name and coordinates
-- ✅ 24-hour and 7-day forecasts
-- ✅ Local caching for offline support
-- ✅ Comprehensive error handling
-- ✅ Multi-language support
+- ✅ **Multi-Provider Support**: WeatherAPI.com & 和风天气 (QWeather)
+- ✅ **Provider Abstraction**: Switch between providers seamlessly
+- ✅ **Independent Domain Models**: Decoupled from API responses
+- ✅ **Location Integration**: One-click weather for current location
+- ✅ **Solar Term Integration**: Weather with traditional Chinese solar terms
+- ✅ **Poetry Recommendations**: Contextual poetry based on weather and solar terms
+- ✅ **Intelligent Caching**: TTL, LRU eviction, request deduplication
+- ✅ **Secure API Key Storage**: Multiple key sources with validation
+- ✅ **Comprehensive Error Handling**: Result type with detailed errors
 
 ## Installation
 
@@ -17,187 +24,111 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  weather_kit:
-    git:
-      url: https://github.com/ZenKitX/WeatherKit.git
-      ref: main
+  weather_kit: ^0.1.0
 ```
 
-## Usage
-
-### Secure API Key Management (Recommended)
-
-**Security First**: Never hardcode API keys in your code. Use one of the following methods:
-
-#### Method 1: Using --dart-define (Best for CI/CD)
+Then run:
 
 ```bash
-flutter run --dart-define=WEATHER_API_KEY=your_actual_key
+flutter pub get
 ```
 
-```dart
-final weatherService = WeatherService.withSecureKey(
-  keyName: 'WEATHER_API_KEY',
-  cache: WeatherCache(),
-);
-```
+## Quick Start
 
-#### Method 2: Using .env file (Best for Development)
-
-1. Create a `.env` file in your project root:
-```env
-WEATHER_API_KEY=your_actual_key_here
-```
-
-2. Add `.env` to `.gitignore`:
-```
-.env
-.env.local
-```
-
-3. Load and use:
-```dart
-// In main()
-await SecureKeyStorage.loadEnvFile();
-
-final weatherService = WeatherService.withSecureKey(
-  keyName: 'WEATHER_API_KEY',
-  cache: WeatherCache(),
-);
-```
-
-#### Method 3: Legacy (Not Recommended)
-
-```dart
-final weatherService = WeatherService.withWeatherAPI(
-  apiKey: 'your_api_key_here',
-  cache: WeatherCache(),
-);
-```
-
-### Basic Usage (Without Security)
+### Basic Usage
 
 ```dart
 import 'package:weather_kit/weather_kit.dart';
 
 void main() async {
-  // Initialize weather service
+  // Initialize with WeatherAPI
   final weatherService = WeatherService.withWeatherAPI(
     apiKey: 'your_api_key_here',
-    cache: WeatherCache(), // Optional cache
+    cache: WeatherCache(),
   );
 
   // Get weather by city
-  final result = await weatherService.getWeatherByCity(city: 'Beijing');
+  final result = await weatherService.getByCity(city: 'Beijing');
 
   result.fold(
     (weather) {
-      print('Temperature: ${weather.current.tempC}°C');
-      print('Condition: ${weather.current.conditionText}');
-      print('Location: ${weather.location.name}');
+      print('📍 ${weather.city.name}');
+      print('🌡️ ${weather.currentTemperature}°C');
+      print('☁️ ${weather.condition.description}');
     },
     (error) {
-      print('Error: ${error.message}');
+      print('❌ Error: ${error.message}');
     },
   );
 }
 ```
 
-### Get Weather by Location
+### Using QWeather (和风天气)
 
 ```dart
-final result = await weatherService.getWeatherByLocation(
-  lat: 39.9042,
-  lon: 116.4074,
+final weatherService = WeatherService.withQWeather(
+  apiKey: 'your_qweather_key',
+  cache: WeatherCache(),
 );
 
+final result = await weatherService.getByCity(city: '北京');
+```
+
+### Location-Based Weather
+
+```dart
+// Get weather for current device location
+final result = await weatherService.getWeatherForCurrentLocation();
+
 result.fold(
-  (weather) => print('Weather: ${weather.current.tempC}°C'),
-  (error) => print('Error: ${error.message}'),
+  (weather) => print('📍 Current: ${weather.city.name}'),
+  (error) => print('❌ Location error: ${error.message}'),
 );
 ```
 
-### Search Cities
+### Weather + Solar Term + Poetry
 
 ```dart
-final result = await weatherService.searchCities('Bei');
+// Get weather with solar term and poetry recommendation
+final result = await weatherService.getWeatherWithSolarTerm(city: '北京');
 
 result.fold(
-  (cities) {
-    for (final city in cities) {
-      print('${city.name}, ${city.country}');
-    }
+  (data) {
+    print('📍 ${data.weather.city.name}');
+    print('🌡️ ${data.weather.currentTemperature}°C');
+    print('🌱 ${data.solarTerm.name} - ${data.solarTerm.description}');
+    print('📜 ${data.recommendedPoetry}');
   },
-  (error) => print('Error: ${error.message}'),
+  (error) => print('❌ Error: ${error.message}'),
 );
 ```
 
-### Cache Management
+## API Keys
 
-```dart
-// Check if cache is valid
-final isValid = await cache.isCacheValid('Beijing');
+### WeatherAPI.com
 
-// Get cached weather
-final cachedWeather = await cache.getWeather('Beijing');
+- **URL**: https://www.weatherapi.com/
+- **Free Tier**: 1 million calls/month
+- **Coverage**: Global
 
-// Clear cache
-await cache.clearCache('Beijing');
-await cache.clearAllCache();
-```
+### 和风天气 (QWeather)
 
-## Weather Model
+- **URL**: https://dev.qweather.com/
+- **Free Tier**: 1000 calls/day
+- **Coverage**: China (best), Global
 
-```dart
-class WeatherModel {
-  LocationInfo location;    // Location information
-  CurrentWeather current;   // Current weather
-  List<HourlyForecast>? hourly;  // 24-hour forecast
-  List<DailyForecast>? daily;    // 7-day forecast
-}
-```
+## Documentation
 
-## Error Handling
-
-```dart
-enum WeatherErrorType {
-  networkError,    // Network connection error
-  timeout,         // Request timeout
-  apiKeyInvalid,   // API key is invalid
-  cityNotFound,    // City not found
-  serverError,     // Server error (5xx)
-  unknown,         // Unknown error
-}
-```
-
-## API Key
-
-Get your free API key from [WeatherAPI.com](https://www.weatherapi.com/):
-
-- Free tier: 1 million calls per month
-- No credit card required
-- Includes current weather, forecast, and more
-
-### ⚠️ Security Best Practices
-
-1. **Never** commit API keys to Git
-2. Use `.env` files for local development
-3. Use `--dart-define` for CI/CD
-4. Use `WeatherService.withSecureKey()` for automatic key validation
-5. Add `.env` to `.gitignore`
-
-### Example .gitignore
-
-```
-.env
-.env.local
-.env.*.local
-```
+- [API Reference](https://pub.dev/documentation/weather_kit/latest/)
 
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+Made with ❤️ by [ZenKit Team](https://github.com/ZenKitX)
