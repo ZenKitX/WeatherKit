@@ -1,6 +1,6 @@
 name: weather_kit
 description: A powerful weather service package for Flutter apps. Supports multiple providers (WeatherAPI, QWeather), location-based queries, solar term integration, and intelligent caching.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/ZenKitX/WeatherKit
 repository: https://github.com/ZenKitX/WeatherKit
 issue_tracker: https://github.com/ZenKitX/WeatherKit/issues
